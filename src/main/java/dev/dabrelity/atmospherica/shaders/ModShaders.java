@@ -134,11 +134,23 @@ public class ModShaders {
         LocalPlayer player = minecraft.player;
         WeatherHandler weatherHandler = GameBusClientEvents.weatherHandler;
         
+        // Debug: Log shader pack status
+        boolean shaderPackActive = OculusCompat.isShaderPackActive();
+        
         // Skip volumetric cloud rendering if Oculus shader pack is active
         // (shader packs typically have their own cloud rendering)
         // Unless user has forced volumetric clouds via config
-        if (OculusCompat.isShaderPackActive() && !ClientConfig.forceVolumetricClouds) {
+        // OR we're being called from within the Oculus pipeline (mixin injection)
+        if (shaderPackActive && !ClientConfig.forceVolumetricClouds && !renderingFromOculusPipeline) {
             return;
+        }
+        
+        // Log when we're attempting to render with shaders active
+        if (shaderPackActive && (ClientConfig.forceVolumetricClouds || renderingFromOculusPipeline)) {
+            // Only log occasionally to avoid spam
+            if (minecraft.level != null && minecraft.level.getGameTime() % 200 == 0) {
+                Atmospherica.LOGGER.info("Atmospherica: Attempting cloud render with shader pack active (forceVolumetricClouds=true)");
+            }
         }
         
         if (
@@ -417,6 +429,41 @@ public class ModShaders {
             projMat.invert();
             modelMat.invert();
         }
+    }
+
+    /**
+     * Special rendering method called from within the Oculus/Iris pipeline.
+     * This bypasses the normal Oculus check since we're already inside the pipeline
+     * and rendering at the correct stage (after composites, before final pass).
+     * 
+     * @param partialTicks Frame partial ticks
+     * @param camera The camera
+     * @param projMat Projection matrix
+     * @param modelMat Model view matrix
+     */
+    public static void renderShadersForOculus(
+        float partialTicks,
+        Camera camera,
+        Matrix4f projMat,
+        Matrix4f modelMat
+    ) {
+        // Use a thread-local flag to bypass the Oculus check in renderShaders
+        renderingFromOculusPipeline = true;
+        try {
+            renderShaders(partialTicks, camera, projMat, modelMat);
+        } finally {
+            renderingFromOculusPipeline = false;
+        }
+    }
+    
+    // Flag to indicate we're being called from within Oculus pipeline
+    private static boolean renderingFromOculusPipeline = false;
+    
+    /**
+     * Check if we should skip Oculus detection (because we're already in the pipeline)
+     */
+    public static boolean isRenderingFromOculusPipeline() {
+        return renderingFromOculusPipeline;
     }
 
     public static PostChain createShader(ResourceLocation resourceLocation) {

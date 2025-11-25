@@ -54,16 +54,22 @@ sourceSets {
 repositories {
     mavenCentral()
     maven { url 'https://repo.spongepowered.org/repository/maven-public/' }
+    maven { url 'https://cursemaven.com' }  // For Oculus
+    maven { url 'https://maven.blamejared.com' }  // Backup for mods
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    
+    // Oculus (Iris for Forge) - compile only, not bundled
+    compileOnly files('libs/oculus-mc1.20.1-1.8.0.jar')
 }
 
 mixin {
     add sourceSets.main, "atmospherica.refmap.json"
     config "atmospherica.mixins.json"
+    config "atmospherica.oculus.mixins.json"
 }
 
 tasks.named('processResources', ProcessResources).configure {
