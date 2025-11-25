@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "atmospherica:block/scoured_grass"
+      },
+      {
+        "model": "atmospherica:block/scoured_grass",
+        "y": 90
+      },
+      {
+        "model": "atmospherica:block/scoured_grass",
+        "y": 180
+      },
+      {
+        "model": "atmospherica:block/scoured_grass",
+        "y": 270
+      }
+    ]
+  }
+}

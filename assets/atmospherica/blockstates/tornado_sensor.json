@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "atmospherica:block/tornado_sensor"
+    },
+    "powered=true": {
+      "model": "atmospherica:block/tornado_sensor_powered"
+    }
+  }
+}

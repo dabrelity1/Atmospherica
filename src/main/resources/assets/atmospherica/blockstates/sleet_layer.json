@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "layers=1": [
+      {"model": "atmospherica:block/sleet_height1"},
+      {"model": "atmospherica:block/sleet_height1", "y": 90},
+      {"model": "atmospherica:block/sleet_height1", "y": 180},
+      {"model": "atmospherica:block/sleet_height1", "y": 270}
+    ],
+    "layers=2": [
+      {"model": "atmospherica:block/sleet_height2"},
+      {"model": "atmospherica:block/sleet_height2", "y": 90},
+      {"model": "atmospherica:block/sleet_height2", "y": 180},
+      {"model": "atmospherica:block/sleet_height2", "y": 270}
+    ],
+    "layers=3": [
+      {"model": "atmospherica:block/sleet_height3"},
+      {"model": "atmospherica:block/sleet_height3", "y": 90},
+      {"model": "atmospherica:block/sleet_height3", "y": 180},
+      {"model": "atmospherica:block/sleet_height3", "y": 270}
+    ],
+    "layers=4": [
+      {"model": "atmospherica:block/sleet_height4"},
+      {"model": "atmospherica:block/sleet_height4", "y": 90},
+      {"model": "atmospherica:block/sleet_height4", "y": 180},
+      {"model": "atmospherica:block/sleet_height4", "y": 270}
+    ],
+    "layers=5": [
+      {"model": "atmospherica:block/sleet_height5"},
+      {"model": "atmospherica:block/sleet_height5", "y": 90},
+      {"model": "atmospherica:block/sleet_height5", "y": 180},
+      {"model": "atmospherica:block/sleet_height5", "y": 270}
+    ],
+    "layers=6": [
+      {"model": "atmospherica:block/sleet_height6"},
+      {"model": "atmospherica:block/sleet_height6", "y": 90},
+      {"model": "atmospherica:block/sleet_height6", "y": 180},
+      {"model": "atmospherica:block/sleet_height6", "y": 270}
+    ],
+    "layers=7": [
+      {"model": "atmospherica:block/sleet_height7"},
+      {"model": "atmospherica:block/sleet_height7", "y": 90},
+      {"model": "atmospherica:block/sleet_height7", "y": 180},
+      {"model": "atmospherica:block/sleet_height7", "y": 270}
+    ],
+    "layers=8": [
+      {"model": "atmospherica:block/sleet"},
+      {"model": "atmospherica:block/sleet", "y": 90},
+      {"model": "atmospherica:block/sleet", "y": 180},
+      {"model": "atmospherica:block/sleet", "y": 270}
+    ]
+  }
+}

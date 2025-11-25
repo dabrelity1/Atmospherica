@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CDC",
+    "CTC",
+    "DDD"
+  ],
+  "key": {
+    "T": {
+      "item": "pmweather:tornado_sensor"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "pmweather:range_upgrade_module"
+  }
+}

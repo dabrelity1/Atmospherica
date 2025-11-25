@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "atmospherica:block/tornado_sensor_bottom",
+    "up": "atmospherica:block/tornado_sensor_top",
+    "east": "atmospherica:block/tornado_sensor_side_off",
+    "north": "atmospherica:block/tornado_sensor_side_off",
+    "south": "atmospherica:block/tornado_sensor_side_off",
+    "west": "atmospherica:block/tornado_sensor_side_off",
+    "particle": "atmospherica:block/tornado_sensor_top"
+  }
+}

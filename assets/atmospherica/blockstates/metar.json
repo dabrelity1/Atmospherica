@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "atmospherica:block/metar",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "atmospherica:block/metar",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "atmospherica:block/metar"
+    },
+    "facing=west": {
+      "model": "atmospherica:block/metar",
+      "y": 90
+    }
+  }
+}

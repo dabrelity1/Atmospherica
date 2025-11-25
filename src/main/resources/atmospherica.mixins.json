@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "dev.dabrelity.atmospherica.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "atmospherica.refmap.json",
+  "mixins": [
+    "LevelMixin",
+    "ServerLevelMixin",
+    "SnowLayerBlockMixin",
+    "SpreadingSnowyDirtBlockMixin"
+  ],
+  "client": [
+    "ParticleMixin",
+    "LevelRendererMixin",
+    "PostChainMixin",
+    "ClientLevelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "atmospherica:block/sounding_viewer"
+    },
+    "facing=east": {
+      "model": "atmospherica:block/sounding_viewer",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "atmospherica:block/sounding_viewer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "atmospherica:block/sounding_viewer",
+      "y": 270
+    }
+  }
+}

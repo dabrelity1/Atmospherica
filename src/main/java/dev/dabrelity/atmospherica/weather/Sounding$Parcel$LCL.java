@@ -1,0 +1,15 @@
+// java.lang.IllegalStateException: Missing decompilation output
+// 	at software.coley.recaf.services.decompile.vineflower.VineflowerDecompiler.decompileInternal(VineflowerDecompiler.java:54)
+// 	at software.coley.recaf.services.decompile.AbstractJvmDecompiler.decompile(AbstractJvmDecompiler.java:49)
+// 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+// 	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+// 	at org.jboss.weld.bean.proxy.AbstractBeanInstance.invoke(AbstractBeanInstance.java:39)
+// 	at org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:109)
+// 	at software.coley.recaf.services.decompile.Decompiler$JvmDecompiler$1195943822$Proxy$_$$_WeldClientProxy.decompile(Unknown Source)
+// 	at software.coley.recaf.services.decompile.DecompilerManager.lambda$decompile$2(DecompilerManager.java:156)
+// 	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+// 	at software.coley.recaf.util.threading.ThreadUtil.lambda$wrap$2(ThreadUtil.java:233)
+// 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+// 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+// 	at java.base/java.lang.Thread.run(Thread.java:1474)
+//

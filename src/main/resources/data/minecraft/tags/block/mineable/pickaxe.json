@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    "atmospherica:wsr88d_core",
+    "atmospherica:reinforced_glass",
+    "atmospherica:reinforced_glass_pane",
+    "atmospherica:anemometer",
+    "atmospherica:radar",
+    "atmospherica:tornado_sensor",
+    "atmospherica:tornado_siren",
+    "atmospherica:metar",
+    "atmospherica:radome",
+    "atmospherica:balloon_platform",
+    "atmospherica:sounding_viewer",
+    "atmospherica:wsr88d_core",
+    "atmospherica:ice_layer",
+    "atmospherica:range_upgrade_module"
+  ]
+}

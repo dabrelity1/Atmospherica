@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "pmweather:heavy_scouring",
+    "pmweather:medium_scouring",
+    "pmweather:scoured_grass",
+    "pmweather:sleet_layer"
+  ]
+}

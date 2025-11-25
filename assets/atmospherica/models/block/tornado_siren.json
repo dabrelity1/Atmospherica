@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "atmospherica:block/tornado_siren_bottom",
+    "up": "atmospherica:block/tornado_siren_top",
+    "east": "atmospherica:block/tornado_siren_side",
+    "north": "atmospherica:block/tornado_siren_side",
+    "south": "atmospherica:block/tornado_siren_side",
+    "west": "atmospherica:block/tornado_siren_side",
+    "particle": "atmospherica:block/tornado_siren_side"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:single",
+      "resource": "atmospherica:particle/rain"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "atmospherica:particle/mist"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "atmospherica:particle/splash"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "atmospherica:particle/snow"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "atmospherica:particle/snow1"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "atmospherica:particle/snow2"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "atmospherica:particle/snow3"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "atmospherica:particle/sleet"
+    }
+  ]
+}

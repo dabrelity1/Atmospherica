@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "atmospherica:block/rotted_log_top",
+    "side": "atmospherica:block/rotted_log"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "atmospherica:block/wsr88d_core"
+    },
+    "facing=east": {
+      "model": "atmospherica:block/wsr88d_core",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "atmospherica:block/wsr88d_core",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "atmospherica:block/wsr88d_core",
+      "y": 270
+    }
+  }
+}

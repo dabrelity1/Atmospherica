@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "atmospherica:item/connector_off"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "atmospherica:connected": 1
+      },
+      "model": "atmospherica:item/connector_on"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "atmospherica:block/balloon_platform_bottom",
+    "up": "atmospherica:block/balloon_platform_top",
+    "east": "atmospherica:block/balloon_platform_side",
+    "north": "atmospherica:block/balloon_platform_side",
+    "south": "atmospherica:block/balloon_platform_side",
+    "west": "atmospherica:block/balloon_platform_side",
+    "particle": "atmospherica:block/balloon_platform_side"
+  }
+}

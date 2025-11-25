@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "atmospherica:heavy_scouring",
+    "atmospherica:medium_scouring",
+    "atmospherica:scoured_grass",
+    "atmospherica:sleet_layer"
+  ]
+}

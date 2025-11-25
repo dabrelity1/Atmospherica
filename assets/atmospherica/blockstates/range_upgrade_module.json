@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "atmospherica:block/range_upgrade_module"
+    },
+    "facing=east": {
+      "model": "atmospherica:block/range_upgrade_module",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "atmospherica:block/range_upgrade_module",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "atmospherica:block/range_upgrade_module",
+      "y": 270
+    }
+  }
+}
