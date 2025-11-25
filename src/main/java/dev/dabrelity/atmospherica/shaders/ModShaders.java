@@ -447,9 +447,15 @@ public class ModShaders {
 
     public static void createShaders() {
         if (clouds == null) {
+            Atmospherica.LOGGER.info("Creating cloud shader from: {}", Atmospherica.getPath("shaders/post/clouds.json"));
             clouds = createShader(
                 Atmospherica.getPath("shaders/post/clouds.json")
             );
+            if (clouds != null) {
+                Atmospherica.LOGGER.info("Cloud shader created successfully");
+            } else {
+                Atmospherica.LOGGER.error("Failed to create cloud shader!");
+            }
         }
     }
 
