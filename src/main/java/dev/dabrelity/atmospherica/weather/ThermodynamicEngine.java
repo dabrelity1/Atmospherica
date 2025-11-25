@@ -35,10 +35,14 @@ public class ThermodynamicEngine {
 
    public static float FBM(Vec3 pos, int octaves, float lacunarity, float gain, float amplitude) {
       double y = 0.0;
-
+      // Use primitive doubles to avoid Vec3 allocations - OPTIMIZATION
+      double px = pos.x, py = pos.y, pz = pos.z;
+      
       for (int i = 0; i < Math.max(octaves, 1); i++) {
-         y += amplitude * noise.getValue(pos.x, pos.y, pos.z);
-         pos = pos.multiply(lacunarity, lacunarity, lacunarity);
+         y += amplitude * noise.getValue(px, py, pz);
+         px *= lacunarity;
+         py *= lacunarity;
+         pz *= lacunarity;
          amplitude *= gain;
       }
 

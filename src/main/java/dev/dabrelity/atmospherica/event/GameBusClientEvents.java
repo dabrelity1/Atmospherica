@@ -56,6 +56,10 @@ public class GameBusClientEvents {
    public static ParticleManager particleManager;
    public static ParticleManager particleManagerDebris;
    public static ParticleBehavior particleBehavior = new ParticleBehavior(null);
+   
+   // Reusable MutableBlockPos for particle spawning - OPTIMIZATION
+   private static final BlockPos.MutableBlockPos spawnPos = new BlockPos.MutableBlockPos();
+   
    public static List<Block> LEAVES_BLOCKS = new ArrayList<>() {
       {
          this.add(Blocks.ACACIA_LEAVES);
@@ -104,27 +108,27 @@ public class GameBusClientEvents {
       int spawnsNeeded = (int)(precip * 80.0F);
       int spawns = 0;
       int spawnAreaSize = 50;
+      BlockPos playerPos = minecraft.player.blockPosition();
 
       for (int i = 0; i < ClientConfig.rainParticleDensity; i++) {
-         BlockPos pos = minecraft.player
-            .blockPosition()
-            .offset(
-               Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2,
-               -5 + Atmospherica.RANDOM.nextInt(25),
-               Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2
-            );
-         if (canPrecipitateAt(level, pos)) {
+         // Use reusable MutableBlockPos instead of allocating new BlockPos - OPTIMIZATION
+         spawnPos.set(
+            playerPos.getX() + Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2,
+            playerPos.getY() - 5 + Atmospherica.RANDOM.nextInt(25),
+            playerPos.getZ() + Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2
+         );
+         if (canPrecipitateAt(level, spawnPos)) {
             TextureAtlasSprite particle = switch (Atmospherica.RANDOM.nextInt(4)) {
                case 1 -> ParticleRegistry.snow1;
                case 2 -> ParticleRegistry.snow2;
                case 3 -> ParticleRegistry.snow3;
                default -> ParticleRegistry.snow;
             };
-            ParticleTexExtraRender snow = new ParticleTexExtraRender((ClientLevel)level, pos.getX(), pos.getY(), pos.getZ(), 0.0, 0.0, 0.0, particle);
+            ParticleTexExtraRender snow = new ParticleTexExtraRender((ClientLevel)level, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0, 0.0, 0.0, particle);
             snow.fullAlphaTarget = 1.0F;
             snow.renderOrder = 3;
             particleBehavior.initParticleSnow(
-               snow, Math.max((int)(5.0F * precip), 1), (float)(WindEngine.getWind(pos, level, false, false, true).length() / 45.0)
+               snow, Math.max((int)(5.0F * precip), 1), (float)(WindEngine.getWind(spawnPos, level, false, false, true).length() / 45.0)
             );
             snow.setScale(Math.max(precip * 0.08F + (Atmospherica.RANDOM.nextFloat() - Atmospherica.RANDOM.nextFloat()) * 0.02F, 0.01F));
             snow.windWeight = 0.15F;
@@ -141,18 +145,18 @@ public class GameBusClientEvents {
       int spawnsNeeded = (int)(precip * 300.0F);
       int spawns = 0;
       int spawnAreaSize = 30;
+      BlockPos playerPos = minecraft.player.blockPosition();
 
       for (int i = 0; i < ClientConfig.rainParticleDensity; i++) {
-         BlockPos pos = minecraft.player
-            .blockPosition()
-            .offset(
-               Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2,
-               -5 + Atmospherica.RANDOM.nextInt(25),
-               Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2
-            );
-         if (canPrecipitateAt(level, pos)) {
+         // Use reusable MutableBlockPos - OPTIMIZATION
+         spawnPos.set(
+            playerPos.getX() + Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2,
+            playerPos.getY() - 5 + Atmospherica.RANDOM.nextInt(25),
+            playerPos.getZ() + Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2
+         );
+         if (canPrecipitateAt(level, spawnPos)) {
             ParticleTexExtraRender sleet = new ParticleTexExtraRender(
-               (ClientLevel)level, pos.getX(), pos.getY(), pos.getZ(), 0.0, 0.0, 0.0, ParticleRegistry.sleet
+               (ClientLevel)level, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0, 0.0, 0.0, ParticleRegistry.sleet
             );
             sleet.fullAlphaTarget = 1.0F;
             sleet.renderOrder = 3;
@@ -175,18 +179,18 @@ public class GameBusClientEvents {
       if (weatherHandler != null) {
          windspeed = WindEngine.getWind(minecraft.player.position(), level, false, false, false, true).length();
       }
+      BlockPos playerPos = minecraft.player.blockPosition();
 
       for (int i = 0; i < ClientConfig.rainParticleDensity; i++) {
-         BlockPos pos = minecraft.player
-            .blockPosition()
-            .offset(
-               Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2,
-               -5 + Atmospherica.RANDOM.nextInt(25),
-               Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2
-            );
-         if (canPrecipitateAt(level, pos)) {
+         // Use reusable MutableBlockPos - OPTIMIZATION
+         spawnPos.set(
+            playerPos.getX() + Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2,
+            playerPos.getY() - 5 + Atmospherica.RANDOM.nextInt(25),
+            playerPos.getZ() + Atmospherica.RANDOM.nextInt(spawnAreaSize) - spawnAreaSize / 2
+         );
+         if (canPrecipitateAt(level, spawnPos)) {
             ParticleTexExtraRender rain = new ParticleTexExtraRender(
-               (ClientLevel)level, pos.getX(), pos.getY(), pos.getZ(), 0.0, 0.0, 0.0, ParticleRegistry.rain
+               (ClientLevel)level, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0, 0.0, 0.0, ParticleRegistry.rain
             );
             rain.fullAlphaTarget = Mth.lerp(precip, 0.3F, 1.0F);
             rain.renderOrder = 3;
@@ -194,7 +198,7 @@ public class GameBusClientEvents {
             if (windspeed > 50.0 && i < ClientConfig.rainParticleDensity / 3) {
                float strength = precip * (float)Mth.clamp((windspeed - 50.0) / 50.0, 0.0, 1.0);
                ParticleTexExtraRender mist = new ParticleTexExtraRender(
-                  (ClientLevel)level, pos.getX(), pos.getY(), pos.getZ(), 0.0, 0.0, 0.0, ParticleRegistry.mist
+                  (ClientLevel)level, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0, 0.0, 0.0, ParticleRegistry.mist
                );
                mist.fullAlphaTarget = Mth.lerp(strength, 0.3F, 1.0F);
                mist.renderOrder = 4;
@@ -213,27 +217,31 @@ public class GameBusClientEvents {
       int var17 = 40;
 
       for (int ix = 0; ix < ClientConfig.rainParticleDensity * 3 * precip; ix++) {
-         BlockPos pos = minecraft.player
-            .blockPosition()
-            .offset(Atmospherica.RANDOM.nextInt(var17) - var17 / 2, -5 + Atmospherica.RANDOM.nextInt(25), Atmospherica.RANDOM.nextInt(var17) - var17 / 2);
-         pos = level.getHeightmapPos(Types.MOTION_BLOCKING, pos).below();
-            BlockState state = level.getBlockState(pos);
+         // Use reusable MutableBlockPos - OPTIMIZATION
+         spawnPos.set(
+            playerPos.getX() + Atmospherica.RANDOM.nextInt(var17) - var17 / 2,
+            playerPos.getY() - 5 + Atmospherica.RANDOM.nextInt(25),
+            playerPos.getZ() + Atmospherica.RANDOM.nextInt(var17) - var17 / 2
+         );
+         BlockPos heightPos = level.getHeightmapPos(Types.MOTION_BLOCKING, spawnPos).below();
+            BlockState state = level.getBlockState(heightPos);
             double maxY = 0.0;
-         VoxelShape shape = state.getShape(level, pos);
+         VoxelShape shape = state.getShape(level, heightPos);
          if (!shape.isEmpty()) {
             maxY = shape.bounds().maxY;
          }
 
-         if (!(pos.distSqr(minecraft.player.blockPosition()) > var17 / 2.0 * (var17 / 2.0)) && canPrecipitateAt(level, pos.above())) {
-            if (level.getBlockState(pos).getBlock().defaultMapColor() == MapColor.WATER) {
-               pos = pos.offset(0, 1, 0);
+         if (!(heightPos.distSqr(playerPos) > var17 / 2.0 * (var17 / 2.0)) && canPrecipitateAt(level, heightPos.above())) {
+            int posY = heightPos.getY();
+            if (level.getBlockState(heightPos).getBlock().defaultMapColor() == MapColor.WATER) {
+               posY += 1;
             }
 
             ParticleTexFX rainx = new ParticleTexFX(
                (ClientLevel)level,
-               pos.getX() + Atmospherica.RANDOM.nextFloat(),
-               pos.getY() + 0.01 + maxY,
-               pos.getZ() + Atmospherica.RANDOM.nextFloat(),
+               heightPos.getX() + Atmospherica.RANDOM.nextFloat(),
+               posY + 0.01 + maxY,
+               heightPos.getZ() + Atmospherica.RANDOM.nextFloat(),
                0.0,
                0.0,
                0.0,

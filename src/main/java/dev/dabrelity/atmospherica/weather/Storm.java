@@ -13,7 +13,6 @@ import dev.dabrelity.atmospherica.sound.MovingSoundStreamingSource;
 import dev.dabrelity.atmospherica.util.CachedNBTTagCompound;
 import dev.dabrelity.atmospherica.util.Util;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -110,13 +108,21 @@ public class Storm {
    public int maxColdEnergy = 300;
    public int coldEnergy = 0;
    public List<Vorticy> vorticies = new ArrayList();
+   
+   // Reusable maps for damage tick to avoid allocations - OPTIMIZATION
+   private final Map<Long, Boolean> checkedPosCache = new java.util.HashMap<>();
+   private final Map<ChunkPos, LevelChunk> chunkMapCache = new java.util.HashMap<>();
 
    public double FBM(Vec3 pos, int octaves, float lacunarity, float gain, float amplitude) {
       double y = 0.0;
+      // Use primitive doubles to avoid Vec3 allocations - OPTIMIZATION  
+      double px = pos.x, py = pos.y, pz = pos.z;
 
       for (int i = 0; i < Math.max(octaves, 1); i++) {
-         y += amplitude * this.simplexNoise.getValue(pos.x, pos.y, pos.z);
-         pos = pos.multiply(lacunarity, lacunarity, lacunarity);
+         y += amplitude * this.simplexNoise.getValue(px, py, pz);
+         px *= lacunarity;
+         py *= lacunarity;
+         pz *= lacunarity;
          amplitude *= gain;
       }
 
@@ -578,25 +584,28 @@ public class Storm {
             if (dd) {
                int windfieldWidth = Math.max((int)this.width, 40);
                int numBlocks = Math.min(windfieldWidth * Math.max(windfieldWidth / 2, 20) + this.windspeed * 3 + 300, ServerConfig.maxBlocksDamagedPerTick);
-               Map<Vec3i, Boolean> checkedMap = new HashMap();
-               Map<ChunkPos, LevelChunk> chunkMap = new HashMap();
+               // Reuse cached maps instead of creating new ones - OPTIMIZATION
+               checkedPosCache.clear();
+               chunkMapCache.clear();
                int damaged = 0;
                int damageMax = (500 + (int)this.width) / 3;
 
                for (int i = 0; i < numBlocks && damaged < damageMax; i++) {
                   int x = (int)(Atmospherica.RANDOM.nextFloat() * windfieldWidth * 2.0F - windfieldWidth);
                   int zx = (int)(Atmospherica.RANDOM.nextFloat() * windfieldWidth * 2.0F - windfieldWidth);
-                  Vec3i off = new Vec3i(x, 0, zx);
-                  if (!checkedMap.containsKey(off)) {
-                     checkedMap.put(off, true);
-                     double dist = off.distSqr(Vec3i.ZERO);
+                  // Use long key instead of Vec3i to avoid allocations - OPTIMIZATION
+                  long posKey = ((long)x << 32) | (zx & 0xFFFFFFFFL);
+                  if (!checkedPosCache.containsKey(posKey)) {
+                     checkedPosCache.put(posKey, true);
+                     // Calculate distance squared directly instead of creating Vec3i
+                     double dist = (double)x * x + (double)zx * zx;
                      if (!(dist > windfieldWidth * windfieldWidth)) {
                         float percAdj = 16.0F;
                         if (ServerConfig.damageEvery5thTick) {
                            percAdj *= 5.0F;
                         }
 
-                        BlockPos bPos = blockPos.offset(off.getX(), 60, off.getZ());
+                        BlockPos bPos = blockPos.offset(x, 60, zx);
                         if (this.level.isInWorldBounds(bPos)) {
                            BlockPos blockPosTop = this.level.getHeightmapPos(Types.MOTION_BLOCKING, bPos).below();
                            double windEffect = this.getWind(blockPosTop.getCenter());
@@ -605,12 +614,12 @@ public class Storm {
                                  SectionPos.blockToSectionCoord(blockPosTop.getX()), SectionPos.blockToSectionCoord(blockPosTop.getZ())
                               );
                               LevelChunk chunk;
-                              if (chunkMap.containsKey(chunkPos)) {
-                                 chunk = (LevelChunk)chunkMap.get(chunkPos);
+                              if (chunkMapCache.containsKey(chunkPos)) {
+                                 chunk = (LevelChunk)chunkMapCache.get(chunkPos);
                               } else {
                                  Atmospherica.LOGGER.debug("{}", chunkPos);
                                  chunk = this.level.getChunk(chunkPos.x, chunkPos.z);
-                                 chunkMap.put(chunkPos, chunk);
+                                 chunkMapCache.put(chunkPos, chunk);
                               }
 
                               this.doDamage(chunk, blockPosTop, windEffect, percAdj, windfieldWidth);
