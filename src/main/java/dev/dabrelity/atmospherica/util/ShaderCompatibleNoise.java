@@ -5,8 +5,8 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class ShaderCompatibleNoise {
-   public static final Sampler2D noiseSampler = new Sampler2D("assets/minecraft/textures/effect/Atmospherica/noise.png");
-   public static final Sampler2D noiseXSampler = new Sampler2D("assets/minecraft/textures/effect/Atmospherica/noisex.png");
+   public static final Sampler2D noiseSampler = new Sampler2D("assets/minecraft/textures/effect/atmospherica/noise.png");
+   public static final Sampler2D noiseXSampler = new Sampler2D("assets/minecraft/textures/effect/atmospherica/noisex.png");
 
    public static float noise2D(Vector2f x) {
       x = x.div(512.0F);
