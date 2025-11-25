@@ -30,21 +30,21 @@ import net.minecraft.world.phys.Vec3;
 public class WeatherCommands {
    public WeatherCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("report").requires(plr -> plr.hasPermission(2)))
                   .then(Commands.literal("generate").executes(this::generateReport))
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("atmosphere").requires(plr -> plr.hasPermission(2)))
                   .then(Commands.literal("sample").then(Commands.literal("column").executes(this::sampleColumn)))
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(
@@ -57,7 +57,7 @@ public class WeatherCommands {
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(
@@ -70,14 +70,14 @@ public class WeatherCommands {
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(Commands.literal("cyclone").then(Commands.literal("natural").executes(this::naturalCyclone)))
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(
@@ -99,11 +99,11 @@ public class WeatherCommands {
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(((LiteralArgumentBuilder)Commands.literal("strike").requires(plr -> plr.hasPermission(2))).executes(this::strike))
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(
@@ -116,7 +116,7 @@ public class WeatherCommands {
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(
@@ -132,7 +132,7 @@ public class WeatherCommands {
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(
@@ -145,7 +145,7 @@ public class WeatherCommands {
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(
@@ -161,34 +161,34 @@ public class WeatherCommands {
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(Commands.literal("supercell").then(Commands.literal("natural").executes(this::naturalStorm)))
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("spawn").requires(plr -> plr.hasPermission(2)))
                   .then(Commands.literal("squall").then(Commands.literal("natural").executes(this::naturalSquall)))
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("clear").requires(plr -> plr.hasPermission(2))).then(Commands.literal("all").executes(this::clearAll))
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(
                ((LiteralArgumentBuilder)Commands.literal("aimtoplayer").requires(plr -> plr.hasPermission(2)))
                   .then(Commands.literal("all").executes(this::aimToPlayer))
             )
       );
       dispatcher.register(
-         (LiteralArgumentBuilder)Commands.literal("Atmospherica")
+         (LiteralArgumentBuilder)Commands.literal("atmospherica")
             .then(Commands.literal("blockstrength").then(Commands.argument("block", ItemArgument.item(context)).executes(this::blockStrength)))
       );
    }
