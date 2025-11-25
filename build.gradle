@@ -116,7 +116,7 @@ tasks.withType(JavaCompile).configureEach {
 compileJava.doLast {
     def refmap = file("${buildDir}/tmp/compileJava/compileJava-refmap.json")
     def refmapOutputDir = file("${buildDir}/resources/main")
-    def refmapTarget = new File(refmapOutputDir, "pmweather.refmap.json")
+    def refmapTarget = new File(refmapOutputDir, "atmospherica.refmap.json")
 
     if (refmap.exists()) {
         refmapOutputDir.mkdirs()
