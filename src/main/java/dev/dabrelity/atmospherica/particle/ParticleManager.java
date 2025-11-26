@@ -88,14 +88,6 @@ public class ParticleManager implements PreparableReloadListener {
    // Reusable collections for render() to avoid allocations each frame
    private final Map<Integer, List<Particle>> sortedListCache = new HashMap();
    private final List<Particle> tempParticleList = new ArrayList(256);
-   
-   // Cached camera position for sorting comparator - OPTIMIZATION
-   private Vec3 sortCameraPos = Vec3.ZERO;
-   private final java.util.Comparator<Particle> DISTANCE_COMPARATOR = (p1, p2) -> {
-      double d1 = p1.getPos().distanceToSqr(sortCameraPos);
-      double d2 = p2.getPos().distanceToSqr(sortCameraPos);
-      return Double.compare(d2, d1);
-   };
 
    private static java.util.Comparator<ParticleRenderType> makeParticleRenderTypeComparator(List<ParticleRenderType> order) {
       return (a, b) -> {
@@ -359,9 +351,12 @@ public class ParticleManager implements PreparableReloadListener {
                for (int i = 0; i <= maxRenderOrder; i++) {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
-                     // Use cached comparator to avoid lambda allocation each frame - OPTIMIZATION
-                     sortCameraPos = cameraPos;
-                     particlesSorted.sort(DISTANCE_COMPARATOR);
+                     // Sort by distance to camera (back to front)
+                     particlesSorted.sort((p1, p2) -> {
+                        double d1 = p1.getPos().distanceToSqr(cameraPos);
+                        double d2 = p2.getPos().distanceToSqr(cameraPos);
+                        return Double.compare(d2, d1);
+                     });
 
                      for (Particle particle : particlesSorted) {
                         double distSq = cameraPos.distanceToSqr(particle.getPos());

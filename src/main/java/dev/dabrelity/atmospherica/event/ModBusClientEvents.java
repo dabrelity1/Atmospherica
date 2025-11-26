@@ -32,7 +32,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent.RegisterLayerDefinit
 import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
 
 @EventBusSubscriber(
-   modid = Atmospherica.MOD_ID,
+   modid = "atmospherica",
    bus = Bus.MOD,
    value = {Dist.CLIENT}
 )

@@ -2,6 +2,7 @@ package dev.dabrelity.atmospherica.render;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.dabrelity.atmospherica.Atmospherica;
 import dev.dabrelity.atmospherica.block.entity.AnemometerBlockEntity;
 import dev.dabrelity.atmospherica.config.ClientConfig;
@@ -43,15 +44,9 @@ public class AnemometerRenderer<T extends BlockEntity> implements BlockEntityRen
    }
 
    public void render(T blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource multiBufferSource, int combinedLightIn, int combinedOverlayIn) {
-      this.model.tower.getAllParts().forEach(ModelPart::resetPose);
+      // Only render the spinning shaft - the static base is rendered by the block model
       this.model.shaft.getAllParts().forEach(ModelPart::resetPose);
-      ModelPart mp = this.model.tower;
-      mp.x += 8.0F;
-      mp.z += 8.0F;
-      mp.xRot = mp.xRot + (float)Math.toRadians(180.0);
-      mp.yRot = mp.yRot + (float)Math.toRadians(180.0);
-      mp.y += 2.0F;
-      mp = this.model.shaft;
+      ModelPart mp = this.model.shaft;
       mp.x += 8.0F;
       mp.z += 8.0F;
       mp.xRot = mp.xRot + (float)Math.toRadians(180.0);
@@ -59,13 +54,18 @@ public class AnemometerRenderer<T extends BlockEntity> implements BlockEntityRen
       mp.y += 2.0F;
       if (blockEntity instanceof AnemometerBlockEntity anemometerBlockEntity) {
          float lerpAngle = Mth.lerp(partialTicks, anemometerBlockEntity.prevSmoothAngle, anemometerBlockEntity.smoothAngle);
-         this.model.shaft.yRot = -((float)Math.toRadians(lerpAngle));
+         this.model.shaft.yRot = this.model.shaft.yRot - (float)Math.toRadians(lerpAngle);
          if (anemometerBlockEntity.smoothAngleRotationalVel > 25.0F && ClientConfig.funenometers) {
             this.model.shaft.xRot = this.model.shaft.xRot + (Atmospherica.RANDOM.nextFloat() - 0.5F) * 0.002F * anemometerBlockEntity.smoothAngleRotationalVel;
             this.model.shaft.zRot = this.model.shaft.zRot + (Atmospherica.RANDOM.nextFloat() - 0.5F) * 0.002F * anemometerBlockEntity.smoothAngleRotationalVel;
          }
       }
 
-      renderModel(getMaterial("anemometer"), this.model, poseStack, multiBufferSource, combinedLightIn, combinedOverlayIn);
+      // Render only the shaft
+      poseStack.pushPose();
+      Material material = getMaterial("anemometer");
+      VertexConsumer vertexConsumer = multiBufferSource.getBuffer(this.model.renderType(material.texture()));
+      this.model.shaft.render(poseStack, vertexConsumer, combinedLightIn, combinedOverlayIn);
+      poseStack.popPose();
    }
 }

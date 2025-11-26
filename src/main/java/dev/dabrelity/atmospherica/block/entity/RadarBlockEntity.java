@@ -49,6 +49,12 @@ public class RadarBlockEntity extends BlockEntity {
    public int ticksNoPacket = 0;
    public boolean hasRangeUpgrade = false;
    public Map<BlockPos, Holder<Biome>> biomeCache = new HashMap();
+   
+   // Spread initialization over multiple ticks to avoid lag spike
+   private int initPhase = 0;
+   private int initX = -2048;
+   private int initZ = -2048;
+   private static final int SAMPLES_PER_TICK = 64; // Process 64 biome samples per tick
 
    public RadarBlockEntity(BlockPos pos, BlockState blockState) {
       super((BlockEntityType)ModBlockEntities.RADAR_BE.get(), pos, blockState);
@@ -99,29 +105,61 @@ public class RadarBlockEntity extends BlockEntity {
       }
    }
 
+   // Track sync progress for chunked syncing
+   private int syncIndex = 0;
+   private boolean needsSync = false;
+   private static final int SYNC_CHUNK_SIZE = 256; // Send 256 biome entries per packet
+
    public void sync(@Nullable Player player, BlockPos blockPos) {
       if (this.init) {
-         CompoundTag data = new CompoundTag();
-         data.putString("packetCommand", "Radar");
-         data.putString("command", "syncBiomes");
-         CompoundTag map = new CompoundTag();
-         int i = 0;
+         // Start chunked sync process
+         this.syncIndex = 0;
+         this.needsSync = true;
+         syncChunk(player, blockPos);
+      }
+   }
+   
+   private void syncChunk(@Nullable Player player, BlockPos blockPos) {
+      if (!this.needsSync || this.syncIndex >= this.biomeData.size()) {
+         this.needsSync = false;
+         return;
+      }
+      
+      CompoundTag data = new CompoundTag();
+      data.putString("packetCommand", "Radar");
+      data.putString("command", "syncBiomes");
+      data.putInt("chunkIndex", this.syncIndex / SYNC_CHUNK_SIZE);
+      data.putInt("totalSize", this.biomeData.size());
+      data.putBoolean("isComplete", this.syncIndex + SYNC_CHUNK_SIZE >= this.biomeData.size());
+      
+      CompoundTag map = new CompoundTag();
+      int endIndex = Math.min(this.syncIndex + SYNC_CHUNK_SIZE, this.biomeData.size());
+      
+      for (int i = this.syncIndex; i < endIndex; i++) {
+         RadarBlockEntity.BiomeData bData = this.biomeData.get(i);
+         CompoundTag element = new CompoundTag();
+         element.put("blockPos", NbtUtils.writeBlockPos(bData.pos()));
+         element.putString("biome", bData.biome.unwrapKey().map(k -> k.location().toString()).orElse("minecraft:plains"));
+         map.put(String.valueOf(i - this.syncIndex), element);
+      }
 
-         for (RadarBlockEntity.BiomeData bData : this.biomeData) {
-            CompoundTag element = new CompoundTag();
-            element.put("blockPos", NbtUtils.writeBlockPos(bData.pos()));
-            element.putString("biome", bData.biome.unwrapKey().map(k -> k.location().toString()).orElse("minecraft:plains"));
-            map.put(String.valueOf(i), element);
-            i++;
-         }
-
-         data.put("data", map);
-         data.put("blockPos", NbtUtils.writeBlockPos(blockPos));
-         if (player == null) {
-            ModNetworking.serverSendToClientDimension(data, this.level);
-         } else {
-            ModNetworking.serverSendToClientPlayer(data, player);
-         }
+      data.put("data", map);
+      data.put("blockPos", NbtUtils.writeBlockPos(blockPos));
+      
+      if (player == null) {
+         ModNetworking.serverSendToClientDimension(data, this.level);
+      } else {
+         ModNetworking.serverSendToClientPlayer(data, player);
+      }
+      
+      this.syncIndex = endIndex;
+      
+      // Schedule next chunk if not complete
+      if (this.syncIndex < this.biomeData.size()) {
+         // Will be sent on next tick
+      } else {
+         this.needsSync = false;
+         Atmospherica.LOGGER.debug("Radar sync complete, sent {} biome entries", this.biomeData.size());
       }
    }
 
@@ -164,28 +202,54 @@ public class RadarBlockEntity extends BlockEntity {
 
       if (!this.init) {
          if (!level.isClientSide()) {
-            this.init = true;
-
-            for (int x = -2048; x <= 2048; x += 64) {
-               for (int zx = -2048; zx <= 2048; zx += 64) {
-                  BlockPos pos = blockPos.offset(new Vec3i(x, 0, zx));
+            // Spread biome sampling over multiple ticks to avoid lag spike
+            int samplesThisTick = 0;
+            
+            // Phase 0: Sample at 64-block intervals
+            while (initPhase == 0 && samplesThisTick < SAMPLES_PER_TICK) {
+               if (initX <= 2048) {
+                  BlockPos pos = blockPos.offset(new Vec3i(initX, 0, initZ));
                   Holder<Biome> biome = level.getBiome(pos);
                   this.biomeData.add(new RadarBlockEntity.BiomeData(pos, biome));
+                  samplesThisTick++;
+                  
+                  initZ += 64;
+                  if (initZ > 2048) {
+                     initZ = -2048;
+                     initX += 64;
+                  }
+               } else {
+                  // Move to phase 1
+                  initPhase = 1;
+                  initX = -2048;
+                  initZ = -2048;
                }
             }
-
-            for (int x = -2048; x <= 2048; x += 128) {
-               for (int zx = -2048; zx <= 2048; zx += 128) {
-                  BlockPos pos = blockPos.offset(new Vec3i(x * 4, 0, zx * 4));
+            
+            // Phase 1: Sample at 128-block intervals (scaled by 4)
+            while (initPhase == 1 && samplesThisTick < SAMPLES_PER_TICK) {
+               if (initX <= 2048) {
+                  BlockPos pos = blockPos.offset(new Vec3i(initX * 4, 0, initZ * 4));
                   Holder<Biome> biome = level.getBiome(pos);
                   RadarBlockEntity.BiomeData data = new RadarBlockEntity.BiomeData(pos, biome);
                   if (!this.biomeData.contains(data)) {
                      this.biomeData.add(data);
                   }
+                  samplesThisTick++;
+                  
+                  initZ += 128;
+                  if (initZ > 2048) {
+                     initZ = -2048;
+                     initX += 128;
+                  }
+               } else {
+                  // Initialization complete
+                  this.init = true;
+                  this.sync(null, blockPos);
+                  Atmospherica.LOGGER.info("Radar initialization complete with {} biome samples", this.biomeData.size());
+                  break;
                }
             }
-
-            this.sync(null, blockPos);
          } else {
             this.ticksNoPacket++;
             if (this.ticksNoPacket > 40) {
@@ -200,6 +264,11 @@ public class RadarBlockEntity extends BlockEntity {
          }
       } else {
          this.ticksNoPacket = 0;
+         
+         // Continue chunked sync if needed (server side only)
+         if (!level.isClientSide() && this.needsSync) {
+            syncChunk(null, blockPos);
+         }
       }
    }
 

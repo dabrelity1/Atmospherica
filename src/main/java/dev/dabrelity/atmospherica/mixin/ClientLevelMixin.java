@@ -12,9 +12,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin({ClientLevel.class})
 public class ClientLevelMixin {
    @Inject(
-      method = {"getSkyDarken"},
+      method = {"m_104805_"},
       at = {@At("RETURN")},
-      cancellable = true
+      cancellable = true,
+      remap = false
    )
    public void editSkyDarken(float partialTick, CallbackInfoReturnable<Float> callbackInfoReturnable) {
       float darken = 1.0F;

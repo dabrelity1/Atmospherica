@@ -34,12 +34,14 @@ public class AnemometerModel<T extends Entity> extends HierarchicalModel<T> {
       PartDefinition tower = partdefinition.addOrReplaceChild(
          "tower",
          CubeListBuilder.create()
+            // Base cube (2x6x2)
             .texOffs(0, 17)
             .addBox(-1.0F, 7.0F, -1.0F, 2.0F, 6.0F, 2.0F, new CubeDeformation(0.0F))
+            // Mast - use thin but visible cubes instead of zero-dimension planes
             .texOffs(22, 21)
-            .addBox(-1.0F, 0.0F, 0.0F, 2.0F, 7.0F, 0.0F, new CubeDeformation(0.0F))
+            .addBox(-1.0F, 0.0F, -0.05F, 2.0F, 7.0F, 0.1F, new CubeDeformation(0.0F))
             .texOffs(18, 17)
-            .addBox(0.0F, 0.0F, -1.0F, 0.0F, 7.0F, 2.0F, new CubeDeformation(0.0F)),
+            .addBox(-0.05F, 0.0F, -1.0F, 0.1F, 7.0F, 2.0F, new CubeDeformation(0.0F)),
          PartPose.offset(0.0F, 11.0F, 0.0F)
       );
       PartDefinition shaft = partdefinition.addOrReplaceChild(
@@ -47,10 +49,11 @@ public class AnemometerModel<T extends Entity> extends HierarchicalModel<T> {
          CubeListBuilder.create()
             .texOffs(22, 17)
             .addBox(-1.0F, -2.0F, -1.0F, 2.0F, 2.0F, 2.0F, new CubeDeformation(0.0F))
-            .texOffs(-1, 16)
-            .addBox(-8.0F, -1.0F, -0.5F, 16.0F, 0.0F, 1.0F, new CubeDeformation(0.0F))
-            .texOffs(-1, 0)
-            .addBox(-0.5F, -1.0F, -8.0F, 1.0F, 0.0F, 16.0F, new CubeDeformation(0.0F))
+            // Cross arms - use thin but visible cubes instead of zero-dimension planes
+            .texOffs(0, 16)
+            .addBox(-8.0F, -1.0F, -0.5F, 16.0F, 0.1F, 1.0F, new CubeDeformation(0.0F))
+            .texOffs(0, 0)
+            .addBox(-0.5F, -1.0F, -8.0F, 1.0F, 0.1F, 16.0F, new CubeDeformation(0.0F))
             .texOffs(8, 17)
             .addBox(-2.5F, -2.5F, 5.0F, 2.0F, 3.0F, 3.0F, new CubeDeformation(0.0F)),
          PartPose.offset(0.0F, 11.0F, 0.0F)

@@ -5,7 +5,6 @@ import dev.dabrelity.atmospherica.block.ModBlocks;
 import dev.dabrelity.atmospherica.block.entity.ModBlockEntities;
 import dev.dabrelity.atmospherica.compat.DistantHorizons;
 import dev.dabrelity.atmospherica.compat.EmbeddiumCompat;
-import dev.dabrelity.atmospherica.compat.OculusCompat;
 import dev.dabrelity.atmospherica.config.ClientConfig;
 import dev.dabrelity.atmospherica.config.ServerConfig;
 import dev.dabrelity.atmospherica.creative.ModCreativeTabs;
@@ -65,15 +64,6 @@ public class Atmospherica {
             LOGGER.info("Initialized Distant Horizons compatibility");
          } catch (Exception ex) {
             LOGGER.debug("Distant Horizons not available: {}", ex.getMessage());
-         }
-         
-         try {
-            OculusCompat.initialize();
-            if (OculusCompat.isOculusPresent()) {
-               LOGGER.info("Oculus (Iris) detected - shader compatibility enabled");
-            }
-         } catch (Exception ex) {
-            LOGGER.debug("Oculus compatibility check failed: {}", ex.getMessage());
          }
          
          try {

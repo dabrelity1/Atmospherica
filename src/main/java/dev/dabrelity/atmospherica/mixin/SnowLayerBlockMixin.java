@@ -13,9 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin({SnowLayerBlock.class})
 public class SnowLayerBlockMixin {
    @Inject(
-      method = {"randomTick"},
+      method = {"m_213898_"},
       at = {@At("HEAD")},
-      cancellable = true
+      cancellable = true,
+      remap = false
    )
    public void editRandomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo callbackInfo) {
       callbackInfo.cancel();

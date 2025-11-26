@@ -34,15 +34,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class EntityRotFX extends TextureSheetParticle {
-   // Reusable vectors to avoid allocations in render() - OPTIMIZATION
-   private static final ThreadLocal<Vector3f[]> RENDER_VECTORS = ThreadLocal.withInitial(() -> new Vector3f[]{
-      new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()
-   });
-   private static final ThreadLocal<Quaternionf> TEMP_QUATERNION = ThreadLocal.withInitial(Quaternionf::new);
-   
-   // Reusable BlockPos for tick() - OPTIMIZATION
-   private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-   
    public static final ParticleRenderType SORTED_TRANSLUCENT = new ParticleRenderType() {
       public void begin(BufferBuilder bufferBuilder, @NotNull TextureManager textureManager) {
          RenderSystem.disableCull();
@@ -161,10 +152,9 @@ public class EntityRotFX extends TextureSheetParticle {
             this.startDeath();
          }
 
-         // Use mutablePos instead of new BlockPos - OPTIMIZATION
-         mutablePos.set((int)this.x, (int)this.y, (int)this.z);
+         BlockPos pos = new BlockPos((int)this.x, (int)this.y, (int)this.z);
          if (this.killWhenUnderTopmostBlock) {
-            int height = this.level.getHeightmapPos(Types.MOTION_BLOCKING, mutablePos).getY();
+            int height = this.level.getHeightmapPos(Types.MOTION_BLOCKING, pos).getY();
             if (this.y - this.killWhenUnderTopmostBlock_ScanAheadRange <= height) {
                this.startDeath();
             }
@@ -241,11 +231,12 @@ public class EntityRotFX extends TextureSheetParticle {
       float f2 = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3d.z());
       Quaternionf quaternion;
       if (this.facePlayer || this.rotationPitch == 0.0F && this.rotationYaw == 0.0F) {
-         // Use reusable quaternion instead of clone() - OPTIMIZATION
-         Quaternionf tempQuat = TEMP_QUATERNION.get();
-         tempQuat.set(renderInfo.rotation());
-         tempQuat.mul(Axis.ZP.rotationDegrees(this.rotationRoll));
-         quaternion = tempQuat;
+         try {
+            quaternion = (Quaternionf)renderInfo.rotation().clone();
+            quaternion.mul(Axis.ZP.rotationDegrees(this.rotationRoll));
+         } catch (CloneNotSupportedException var16) {
+            quaternion = renderInfo.rotation();
+         }
       } else {
          quaternion = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
          if (this.facePlayerYaw) {
@@ -257,12 +248,9 @@ public class EntityRotFX extends TextureSheetParticle {
          quaternion.mul(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, this.prevRotationPitch, this.rotationPitch)));
       }
 
-      // Use reusable vectors instead of creating new ones - OPTIMIZATION
-      Vector3f[] v3f = RENDER_VECTORS.get();
-      v3f[0].set(-1.0F, -1.0F, 0.0F);
-      v3f[1].set(-1.0F, 1.0F, 0.0F);
-      v3f[2].set(1.0F, 1.0F, 0.0F);
-      v3f[3].set(1.0F, -1.0F, 0.0F);
+      Vector3f[] v3f = new Vector3f[]{
+         new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
+      };
       float scale = this.getQuadSize(partialTicks);
 
       for (int i = 0; i < 4; i++) {

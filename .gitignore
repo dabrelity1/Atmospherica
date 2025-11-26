@@ -22,12 +22,6 @@ build/
 run/
 runs/
 
-# Oculus source code (for development reference only)
-Oculus-1.20.1-new/
-
-# Libs folder (contains Oculus JAR for compiling)
-libs/
-
 # OS files
 .DS_Store
 Thumbs.db
@@ -45,3 +39,7 @@ Thumbs.db
 *.tmp
 *.swp
 *~
+
+# Project-specific excludes
+old-weathermod-1.21.1-version/
+Oculus-1.20.1-new/

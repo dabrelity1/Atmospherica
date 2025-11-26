@@ -6,7 +6,7 @@ import com.mojang.blaze3d.shaders.Uniform;
 import java.util.Arrays;
 import dev.dabrelity.atmospherica.Atmospherica;
 import dev.dabrelity.atmospherica.compat.DistantHorizons;
-import dev.dabrelity.atmospherica.compat.OculusCompat;
+
 import dev.dabrelity.atmospherica.config.ClientConfig;
 import dev.dabrelity.atmospherica.config.ServerConfig;
 import dev.dabrelity.atmospherica.event.GameBusClientEvents;
@@ -134,22 +134,15 @@ public class ModShaders {
         LocalPlayer player = minecraft.player;
         WeatherHandler weatherHandler = GameBusClientEvents.weatherHandler;
         
-        // Debug: Log shader pack status
-        boolean shaderPackActive = OculusCompat.isShaderPackActive();
-        
-        // Skip volumetric cloud rendering if Oculus shader pack is active
-        // (shader packs typically have their own cloud rendering)
-        // Unless user has forced volumetric clouds via config
-        // OR we're being called from within the Oculus pipeline (mixin injection)
-        if (shaderPackActive && !ClientConfig.forceVolumetricClouds && !renderingFromOculusPipeline) {
-            return;
-        }
-        
-        // Log when we're attempting to render with shaders active
-        if (shaderPackActive && (ClientConfig.forceVolumetricClouds || renderingFromOculusPipeline)) {
-            // Only log occasionally to avoid spam
-            if (minecraft.level != null && minecraft.level.getGameTime() % 200 == 0) {
-                Atmospherica.LOGGER.info("Atmospherica: Attempting cloud render with shader pack active (forceVolumetricClouds=true)");
+        // Check if we're in a valid dimension
+        // If validDimensions isn't loaded yet, assume overworld is valid
+        boolean isValidDimension = true;
+        if (minecraft.level != null) {
+            if (ServerConfig.validDimensions != null) {
+                isValidDimension = ServerConfig.validDimensions.contains(minecraft.level.dimension());
+            } else {
+                // Default to overworld if config not loaded
+                isValidDimension = minecraft.level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD);
             }
         }
         
@@ -158,8 +151,7 @@ public class ModShaders {
             player != null &&
             weatherHandler != null &&
             minecraft.level != null &&
-            ServerConfig.validDimensions != null &&
-            ServerConfig.validDimensions.contains(minecraft.level.dimension())
+            isValidDimension
         ) {
             int width = minecraft.getWindow().getWidth();
             int height = minecraft.getWindow().getHeight();
@@ -431,41 +423,6 @@ public class ModShaders {
         }
     }
 
-    /**
-     * Special rendering method called from within the Oculus/Iris pipeline.
-     * This bypasses the normal Oculus check since we're already inside the pipeline
-     * and rendering at the correct stage (after composites, before final pass).
-     * 
-     * @param partialTicks Frame partial ticks
-     * @param camera The camera
-     * @param projMat Projection matrix
-     * @param modelMat Model view matrix
-     */
-    public static void renderShadersForOculus(
-        float partialTicks,
-        Camera camera,
-        Matrix4f projMat,
-        Matrix4f modelMat
-    ) {
-        // Use a thread-local flag to bypass the Oculus check in renderShaders
-        renderingFromOculusPipeline = true;
-        try {
-            renderShaders(partialTicks, camera, projMat, modelMat);
-        } finally {
-            renderingFromOculusPipeline = false;
-        }
-    }
-    
-    // Flag to indicate we're being called from within Oculus pipeline
-    private static boolean renderingFromOculusPipeline = false;
-    
-    /**
-     * Check if we should skip Oculus detection (because we're already in the pipeline)
-     */
-    public static boolean isRenderingFromOculusPipeline() {
-        return renderingFromOculusPipeline;
-    }
-
     public static PostChain createShader(ResourceLocation resourceLocation) {
         try {
             Minecraft minecraft = Minecraft.getInstance();
@@ -494,15 +451,9 @@ public class ModShaders {
 
     public static void createShaders() {
         if (clouds == null) {
-            Atmospherica.LOGGER.info("Creating cloud shader from: {}", Atmospherica.getPath("shaders/post/clouds.json"));
             clouds = createShader(
                 Atmospherica.getPath("shaders/post/clouds.json")
             );
-            if (clouds != null) {
-                Atmospherica.LOGGER.info("Cloud shader created successfully");
-            } else {
-                Atmospherica.LOGGER.error("Failed to create cloud shader!");
-            }
         }
     }
 

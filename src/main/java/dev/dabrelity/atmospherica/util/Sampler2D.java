@@ -14,13 +14,23 @@ public class Sampler2D {
    private boolean bilinear = false;
 
    public Sampler2D(String path) {
+      // Try multiple ways to load the resource
       URL url = Thread.currentThread().getContextClassLoader().getResource(path);
+      if (url == null) {
+         url = Sampler2D.class.getClassLoader().getResource(path);
+      }
+      if (url == null) {
+         url = Sampler2D.class.getResource("/" + path);
+      }
+      if (url == null) {
+         Atmospherica.LOGGER.error("Could not find texture resource: {}", path);
+      }
 
       BufferedImage bufferedImage;
       try {
          bufferedImage = ImageIO.read(url);
-      } catch (IOException var6) {
-         Atmospherica.LOGGER.error(var6.getMessage(), var6);
+      } catch (IOException | IllegalArgumentException var6) {
+         Atmospherica.LOGGER.error("Failed to load texture {}: {}", path, var6.getMessage());
          bufferedImage = new BufferedImage(1, 1, 2);
       }
 

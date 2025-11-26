@@ -90,7 +90,7 @@ public class ServerLevelMixin {
     * In 1.20.1, precipitation is handled inside tickChunk. We inject at TAIL to add our custom
     * precipitation logic after vanilla's chunk tick.
     */
-   @Inject(method = "tickChunk", at = @At("TAIL"))
+   @Inject(method = "m_8714_", at = @At("TAIL"), remap = false)
    private void Atmospherica$onTickChunk(LevelChunk chunk, int randomTickSpeed, CallbackInfo ci) {
       ServerLevel level = (ServerLevel)(Object)this;
       
