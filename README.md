@@ -29,7 +29,7 @@ A realistic weather simulation mod for Minecraft Forge 1.20.1 featuring volumetr
 - Ground accumulation (ice layers, sleet)
 - Dynamic precipitation based on atmospheric conditions
 
-### 📡 Weather Equipment
+### Weather Equipment
 - **Radar** - Track storms and precipitation
 - **METAR Station** - Monitor local weather conditions
 - **Tornado Siren** - Warning system for severe weather
