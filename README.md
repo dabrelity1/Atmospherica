@@ -8,23 +8,23 @@ A realistic weather simulation mod for Minecraft Forge 1.20.1 featuring volumetr
 
 ## Features
 
-### 🌩️ Severe Weather
+### Severe Weather
 - **Tornadoes** - Fully simulated with debris, damage, and realistic vortex physics
 - **Thunderstorms** - Dynamic lightning with custom rendering
 - **Supercells** - Rotating thunderstorms with mesocyclones
 
-### ☁️ Volumetric Clouds
+### Volumetric Clouds
 - Raymarched volumetric cloud rendering
 - Dynamic cloud formation based on atmospheric conditions
 - Multiple cloud layers with realistic lighting
 
-### 🌡️ Thermodynamic Engine
+### Thermodynamic Engine
 - Real atmospheric physics simulation
 - Temperature, humidity, and pressure calculations
 - CAPE (Convective Available Potential Energy) modeling
 - Lifted Condensation Level (LCL) calculations
 
-### 🌧️ Precipitation
+### Precipitation
 - Custom particle system for rain, snow, and sleet
 - Ground accumulation (ice layers, sleet)
 - Dynamic precipitation based on atmospheric conditions
@@ -41,10 +41,10 @@ A realistic weather simulation mod for Minecraft Forge 1.20.1 featuring volumetr
 ## Compatibility
 
 Atmospherica is compatible with:
-- ✅ **Distant Horizons** - Extended render distance support
-- ✅ **Oculus** (Iris for Forge) - Shader pack compatibility
-- ✅ **Embeddium/Rubidium** (Sodium for Forge) - Performance mod compatibility
-- ✅ **Serene Seasons** - Seasonal weather integration
+- **Distant Horizons** - Extended render distance support
+- **Oculus** (Iris for Forge) - Shader pack compatibility
+- **Embeddium/Rubidium** (Sodium for Forge) - Performance mod compatibility
+- **Serene Seasons** - Seasonal weather integration
 
 ## Installation
 
