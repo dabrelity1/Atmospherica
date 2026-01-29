@@ -31,18 +31,29 @@ public class ThermodynamicEngine {
    public static float cachedPNoise = 0.0F;
    public static float cachedNoise = 0.0F;
    public static float cachedTime = 0.0F;
-   public static Vec3 cachedPos = null;
+   public static double cachedX = 0.0;
+   public static double cachedZ = 0.0;
+   public static boolean hasCached = false;
 
    public static float FBM(Vec3 pos, int octaves, float lacunarity, float gain, float amplitude) {
-      double y = 0.0;
+      return FBM(pos.x, pos.y, pos.z, octaves, lacunarity, gain, amplitude);
+   }
+
+   public static float FBM(double x, double y, double z, int octaves, float lacunarity, float gain, float amplitude) {
+      double val = 0.0;
+      double px = x;
+      double py = y;
+      double pz = z;
 
       for (int i = 0; i < Math.max(octaves, 1); i++) {
-         y += amplitude * noise.getValue(pos.x, pos.y, pos.z);
-         pos = pos.multiply(lacunarity, lacunarity, lacunarity);
+         val += amplitude * noise.getValue(px, py, pz);
+         px *= lacunarity;
+         py *= lacunarity;
+         pz *= lacunarity;
          amplitude *= gain;
       }
 
-      return (float)y;
+      return (float)val;
    }
 
    public static ThermodynamicEngine.Precipitation getPrecipitationType(WeatherHandler weatherHandler, Vec3 pos, Level level, int advance) {
@@ -56,7 +67,7 @@ public class ThermodynamicEngine {
       int y = start;
 
       while (y >= 0) {
-         float rainTemp = samplePoint(weatherHandler, pos.add(0.0, y, 0.0), level, null, advance).temperature();
+         float rainTemp = samplePoint(weatherHandler, pos.x, pos.y + y, pos.z, level, null, advance, null).temperature();
          if (rainTemp < 3.0F && rainTemp > -1.0F) {
             precip = ThermodynamicEngine.Precipitation.WINTRY_MIX;
          } else if (rainTemp <= 0.0F) {
@@ -174,7 +185,13 @@ public class ThermodynamicEngine {
    public static ThermodynamicEngine.AtmosphericDataPoint samplePoint(
       WeatherHandler weatherHandler, Vec3 pos, Level level, @Nullable RadarBlockEntity radarBlockEntity, int advance, @Nullable Integer groundHeight
    ) {
-      BlockPos blockPos = new BlockPos((int)pos.x, (int)pos.y, (int)pos.z);
+      return samplePoint(weatherHandler, pos.x, pos.y, pos.z, level, radarBlockEntity, advance, groundHeight);
+   }
+
+   public static ThermodynamicEngine.AtmosphericDataPoint samplePoint(
+      WeatherHandler weatherHandler, double posX, double posY, double posZ, Level level, @Nullable RadarBlockEntity radarBlockEntity, int advance, @Nullable Integer groundHeight
+   ) {
+      BlockPos blockPos = new BlockPos((int)posX, (int)posY, (int)posZ);
       ThermodynamicEngine.noise = WindEngine.simplexNoise;
       if (ThermodynamicEngine.noise == null) {
          return new ThermodynamicEngine.AtmosphericDataPoint(30.0F, 30.0F, 1013.0F, 30.0F);
@@ -184,7 +201,7 @@ public class ThermodynamicEngine {
          float humidity = 0.0F;
          int c = 0;
          boolean cached = false;
-         if (cachedPos != null && cachedPos.equals(pos.multiply(1.0, 0.0, 1.0)) && Math.abs(time - cachedTime) < 20.0F) {
+         if (hasCached && cachedX == posX && cachedZ == posZ && Math.abs(time - cachedTime) < 20.0F) {
             biomeTemp = cachedBiomeTemp;
             humidity = cachedHumidity;
             cached = true;
@@ -209,7 +226,9 @@ public class ThermodynamicEngine {
 
             humidity /= c;
             biomeTemp /= c;
-            cachedPos = pos.multiply(1.0, 0.0, 1.0);
+            cachedX = posX;
+            cachedZ = posZ;
+            hasCached = true;
             cachedBiomeTemp = biomeTemp;
             cachedHumidity = humidity;
             cachedTime = time;
@@ -226,8 +245,8 @@ public class ThermodynamicEngine {
          Holder<Biome> biome = level.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
          float gBiomeTemp = SereneSeasons.getBiomeTemperature(level, biome, blockPos);
          float gHumidity = ((Biome)biome.value()).getModifiedClimateSettings().downfall();
-         humidity = Mth.lerp(Mth.clamp((float)pos.y() / 16000.0F, 0.0F, 0.15F), humidity, gHumidity);
-         biomeTemp = Mth.lerp(Mth.clamp((float)pos.y() / 16000.0F, 0.0F, 0.15F), biomeTemp, gBiomeTemp - 0.15F);
+         humidity = Mth.lerp(Mth.clamp((float)posY / 16000.0F, 0.0F, 0.15F), humidity, gHumidity);
+         biomeTemp = Mth.lerp(Mth.clamp((float)posY / 16000.0F, 0.0F, 0.15F), biomeTemp, gBiomeTemp - 0.15F);
          if (humidity > 0.4F) {
             humidity -= 0.4F;
             humidity /= 2.0F;
@@ -236,8 +255,8 @@ public class ThermodynamicEngine {
 
          humidity = (float)Math.pow(humidity, 0.3F);
          int elevationSeaLevel = elevation - level.getSeaLevel();
-         float aboveSeaLevel = (float)pos.y() - level.getSeaLevel();
-         float altitude = Math.max((float)pos.y() - elevation, 0.0F);
+         float aboveSeaLevel = (float)posY - level.getSeaLevel();
+         float altitude = Math.max((float)posY - elevation, 0.0F);
          float daytime = (float)(level.getDayTime() + advance) / 24000.0F;
          double x = (daytime - 0.18) * Math.PI * 2.0;
          double timeFactor = Math.sin(x + Math.sin(x) / -2.0);
@@ -245,7 +264,7 @@ public class ThermodynamicEngine {
          if (cached) {
             pblHeight = cachedPBLHeight;
          } else {
-            pblHeight = FBM(pos.multiply(1.0F / xzScale, 0.0, 1.0F / xzScale).add(0.0, time / timeScale, 0.0), 2, 2.0F, 0.5F, 1.0F);
+            pblHeight = FBM(posX / xzScale, time / timeScale, posZ / xzScale, 2, 2.0F, 0.5F, 1.0F);
          }
 
          cachedPBLHeight = pblHeight;
@@ -256,7 +275,7 @@ public class ThermodynamicEngine {
          if (cached) {
             sfcTNoise = cachedSfcTNoise;
          } else {
-            sfcTNoise = FBM(pos.multiply(1.0F / xzScale, 0.0, 1.0F / xzScale).add(0.0, time / timeScale, 0.0), 3, 2.0F, 0.5F, 1.0F);
+            sfcTNoise = FBM(posX / xzScale, time / timeScale, posZ / xzScale, 3, 2.0F, 0.5F, 1.0F);
          }
 
          cachedSfcTNoise = sfcTNoise;
@@ -279,7 +298,7 @@ public class ThermodynamicEngine {
          if (cached) {
             pNoise = cachedPNoise;
          } else {
-            pNoise = FBM(pos.multiply(1.0F / -xzScale, 0.0, 1.0F / -xzScale).add(0.0, time / timeScale, 0.0), 3, 2.0F, 0.5F, 1.0F);
+            pNoise = FBM(posX / -xzScale, time / timeScale, posZ / -xzScale, 3, 2.0F, 0.5F, 1.0F);
          }
 
          cachedPNoise = pNoise;
@@ -288,8 +307,8 @@ public class ThermodynamicEngine {
 
          for (Storm storm : weatherHandler.getStorms()) {
             if (storm.stormType == 1) {
-               double distance = pos.multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
-               Vec2 v2fWorldPos = new Vec2((float)pos.x, (float)pos.z);
+               double distance = Math.sqrt(Math.pow(posX - storm.position.x, 2) + Math.pow(posZ - storm.position.z, 2));
+               Vec2 v2fWorldPos = new Vec2((float)posX, (float)posZ);
                Vec2 stormVel = new Vec2((float)storm.velocity.x, (float)storm.velocity.z);
                Vec2 v2fStormPos = new Vec2((float)storm.position.x, (float)storm.position.z);
                Vec2 right = new Vec2(stormVel.y, -stormVel.x).normalized();
@@ -307,7 +326,9 @@ public class ThermodynamicEngine {
                Vec2 facing = v2fWorldPos.add(nearPoint.negated());
                float behind = -facing.dot(fwd);
                behind += FBM(
-                     new Vec3(pos.x / (ServerConfig.stormSize * 2.0), pos.z / (ServerConfig.stormSize * 2.0), (float)level.getGameTime() / 20000.0F),
+                     posX / (ServerConfig.stormSize * 2.0),
+                     posZ / (ServerConfig.stormSize * 2.0),
+                     (float)level.getGameTime() / 20000.0F,
                      5,
                      2.0F,
                      0.2F,
@@ -341,7 +362,7 @@ public class ThermodynamicEngine {
          }
 
          float dewP = Mth.clamp(
-            (float)Mth.lerp(0.7F, (ThermodynamicEngine.noise.getValue(pos.z / 2200.0, time / 9000.0F + pos.y / 100.0, pos.x / 300.0) + 1.0) / 2.0, var81),
+            (float)Mth.lerp(0.7F, (ThermodynamicEngine.noise.getValue(posZ / 2200.0, time / 9000.0F + posY / 100.0, posX / 300.0) + 1.0) / 2.0, var81),
             0.2F,
             1.0F
          );
@@ -369,12 +390,12 @@ public class ThermodynamicEngine {
          if (cached) {
             noise = cachedNoise;
          } else {
-            noise = FBM(pos.multiply(1.0F / xzScale, 0.0, 1.0F / -xzScale).add(0.0, time / timeScale, 0.0), 2, 2.0F, 0.5F, 1.0F);
+            noise = FBM(posX / xzScale, time / timeScale, posZ / -xzScale, 2, 2.0F, 0.5F, 1.0F);
          }
 
          cachedNoise = noise;
          float bumpH = elevation + Mth.clamp(noise + 0.5F, 0.5F, 1.5F) * 1250.0F;
-         noise = FBM(pos.multiply(1.0F / -xzScale, 0.0, 1.0F / xzScale).add(0.0, time / timeScale, 0.0), 2, 2.0F, 0.5F, 1.0F);
+         noise = FBM(posX / -xzScale, time / timeScale, posZ / xzScale, 2, 2.0F, 0.5F, 1.0F);
          float bumpStrength = Mth.clamp(noise + 0.5F, 0.0F, 1.5F) * 5.5F * Mth.clamp(1.0F - humidity, 0.0F, 1.0F);
          bumpStrength -= 4.0F * humidity;
          if (altitude > bumpH) {
@@ -386,7 +407,7 @@ public class ThermodynamicEngine {
          float a = Mth.clamp(altitude, 0.0F, 1000.0F);
          var83 -= lapseRate * (a / 1000.0F) * 0.25F;
          dp -= lapseRate * (a / 1000.0F) * var94 * 0.25F;
-         noise = FBM(pos.multiply(1.0F / xzScale, 0.0, 1.0F / xzScale).add(0.0, time / timeScale, 0.0), 2, 2.0F, 0.5F, 1.0F);
+         noise = FBM(posX / xzScale, time / timeScale, posZ / xzScale, 2, 2.0F, 0.5F, 1.0F);
          float inversionHeight = elevationSeaLevel + Mth.lerp(Mth.clamp(noise, 0.0F, 1.0F), 12000.0F, 16000.0F);
          if (altitude > inversionHeight) {
             float dif = altitude - inversionHeight;
@@ -395,14 +416,14 @@ public class ThermodynamicEngine {
             dp += Mth.lerp(i, 0.0F, lapseRate * (dif / 1000.0F) * var94);
          }
 
-         float offset = FBM(pos.multiply(1.0F / xzScale, 1.0F / yScale, 1.0F / xzScale).add(0.0, time / -timeScale, 0.0), 4, 2.0F, 0.5F, 1.0F);
+         float offset = FBM(posX / xzScale, posY / yScale + time / -timeScale, posZ / xzScale, 4, 2.0F, 0.5F, 1.0F);
          offset *= 1.5F;
          var83 += offset;
          dp -= offset * 1.5F;
          float p = getPressureAtHeight(aboveSeaLevel, var83, elevationSeaLevel, sfcPressure);
-         float dewMin = FBM(pos.multiply(1.0F / xzScale, 1.0F / yScale, 1.0F / xzScale).add(0.0, time / -timeScale, 0.0), 4, 2.0F, 0.5F, 1.0F);
+         float dewMin = FBM(posX / xzScale, posY / yScale + time / -timeScale, posZ / xzScale, 4, 2.0F, 0.5F, 1.0F);
          dewMin = Mth.clamp(dewMin + 1.0F, 0.0F, 2.0F) * 2.0F;
-         dewMin += (float)Math.pow(pos.y / 16000.0, 2.0) * 40.0F * (1.0F - humidity);
+         dewMin += (float)Math.pow(posY / 16000.0, 2.0) * 40.0F * (1.0F - humidity);
          float td = var83 - dewMin;
          if (dp > td) {
             float dif = dp - td;
