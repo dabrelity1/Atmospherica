@@ -2,9 +2,10 @@
 
 All notable changes to Atmospherica will be documented in this file.
 
-## [0.15.3-1.20.1] - 2025-11-25
+## [1.0.0-1.20.1] - 2026-01-29
 
 ### Added
+- Ported to Minecraft 1.20.1 (Forge)
 - Initial release as Atmospherica (rebranded from PMWeather)
 - Oculus (Iris) shader pack compatibility
 - Embeddium/Rubidium compatibility
