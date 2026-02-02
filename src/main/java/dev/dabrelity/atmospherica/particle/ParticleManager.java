@@ -352,11 +352,13 @@ public class ParticleManager implements PreparableReloadListener {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
                      // Sort by distance to camera (back to front)
-                     particlesSorted.sort((p1, p2) -> {
-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
-                        return Double.compare(d2, d1);
-                     });
+                     if (this.shouldSort(particleRenderType)) {
+                        particlesSorted.sort((p1, p2) -> {
+                           double d1 = p1.getPos().distanceToSqr(cameraPos);
+                           double d2 = p2.getPos().distanceToSqr(cameraPos);
+                           return Double.compare(d2, d1);
+                        });
+                     }
 
                      for (Particle particle : particlesSorted) {
                         double distSq = cameraPos.distanceToSqr(particle.getPos());
@@ -424,6 +426,12 @@ public class ParticleManager implements PreparableReloadListener {
 
    public Map<ParticleRenderType, Queue<Particle>> getParticles() {
       return this.particles;
+   }
+
+   private boolean shouldSort(ParticleRenderType type) {
+      return type != ParticleRenderType.PARTICLE_SHEET_OPAQUE
+         && type != ParticleRenderType.PARTICLE_SHEET_LIT
+         && type != ParticleRenderType.TERRAIN_SHEET;
    }
 
    static class MutableSpriteSet implements SpriteSet {
