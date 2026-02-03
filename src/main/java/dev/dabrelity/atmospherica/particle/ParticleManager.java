@@ -100,6 +100,17 @@ public class ParticleManager implements PreparableReloadListener {
       };
    }
 
+   /**
+    * Checks if the particle render type requires sorting.
+    * Opaque types relying on the depth buffer should NOT be sorted to avoid CPU overhead
+    * and maximize early-Z culling performance (front-to-back is ideal, but unsorted is better than back-to-front).
+    */
+   private boolean shouldSort(ParticleRenderType type) {
+      return type == ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
+         || type == ParticleRenderType.CUSTOM
+         || type == EntityRotFX.SORTED_TRANSLUCENT;
+   }
+
    public ParticleManager(ClientLevel level, TextureManager textureManager) {
       this.textureAtlas = new TextureAtlas(TextureAtlas.LOCATION_PARTICLES);
       this.level = level;
@@ -352,11 +363,14 @@ public class ParticleManager implements PreparableReloadListener {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
                      // Sort by distance to camera (back to front)
-                     particlesSorted.sort((p1, p2) -> {
-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
-                        return Double.compare(d2, d1);
-                     });
+                     // Only sort if necessary. Opaque particles use the depth buffer and shouldn't be sorted back-to-front.
+                     if (shouldSort(particleRenderType)) {
+                        particlesSorted.sort((p1, p2) -> {
+                           double d1 = p1.getPos().distanceToSqr(cameraPos);
+                           double d2 = p2.getPos().distanceToSqr(cameraPos);
+                           return Double.compare(d2, d1);
+                        });
+                     }
 
                      for (Particle particle : particlesSorted) {
                         double distSq = cameraPos.distanceToSqr(particle.getPos());
