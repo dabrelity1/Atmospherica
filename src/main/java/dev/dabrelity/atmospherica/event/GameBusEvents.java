@@ -104,7 +104,7 @@ public class GameBusEvents {
             Vec3 wind = WindEngine.getWind(movingBlock.getPosition(1.0F), serverLevel, false, true, false);
             movingBlock.addDeltaMovement(wind.multiply(0.05F, 0.0, 0.05F).multiply(0.01F, 0.0, 0.01F));
          }
-         if (Atmospherica.RANDOM.nextInt(2) == 0) {
+         if (Atmospherica.RANDOM.nextInt(2) == 0 && !weatherHandler.getStorms().isEmpty()) {
             List<ServerPlayer> validPlayers = new ArrayList<>();
             List<ServerPlayer> plrs = new ArrayList<>(serverLevel.players());
             Collections.shuffle(plrs);
@@ -113,7 +113,7 @@ public class GameBusEvents {
                boolean isTooNear = false;
 
                for (ServerPlayer existing : validPlayers) {
-                  if (existing.distanceTo(player) <= 64.0F) {
+                  if (existing.distanceToSqr(player) <= 64.0F * 64.0F) {
                      isTooNear = true;
                      break;
                   }
@@ -208,7 +208,7 @@ public class GameBusEvents {
                boolean isTooNear = false;
 
                for (ServerPlayer existingx : validPlayers) {
-                  if (existingx.distanceTo(player) <= ServerConfig.spawnRange / 2.0F) {
+                  if (existingx.distanceToSqr(player) <= (ServerConfig.spawnRange / 2.0F) * (ServerConfig.spawnRange / 2.0F)) {
                      isTooNear = true;
                      break;
                   }

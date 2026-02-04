@@ -351,12 +351,18 @@ public class ParticleManager implements PreparableReloadListener {
                for (int i = 0; i <= maxRenderOrder; i++) {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
-                     // Sort by distance to camera (back to front)
-                     particlesSorted.sort((p1, p2) -> {
-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
-                        return Double.compare(d2, d1);
-                     });
+                     // Sort by distance to camera (back to front), but skip for opaque particles
+                     boolean shouldSort = particleRenderType != ParticleRenderType.PARTICLE_SHEET_OPAQUE
+                        && particleRenderType != ParticleRenderType.TERRAIN_SHEET
+                        && particleRenderType != EntityRotFX.SORTED_OPAQUE_BLOCK;
+
+                     if (shouldSort) {
+                        particlesSorted.sort((p1, p2) -> {
+                           double d1 = p1.getPos().distanceToSqr(cameraPos);
+                           double d2 = p2.getPos().distanceToSqr(cameraPos);
+                           return Double.compare(d2, d1);
+                        });
+                     }
 
                      for (Particle particle : particlesSorted) {
                         double distSq = cameraPos.distanceToSqr(particle.getPos());

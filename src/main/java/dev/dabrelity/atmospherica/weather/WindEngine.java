@@ -331,8 +331,8 @@ public class WindEngine {
                Vec3 relativePosx = position.subtract(tornadicStorm.position);
                Vec3 inwardx = new Vec3(-relativePosx.x, 0.0, -relativePosx.z).normalize();
                Vec3 rotationalx = new Vec3(relativePosx.z, 0.0, -relativePosx.x).normalize();
-               double distancex = position.distanceTo(tornadicStorm.position);
-               if (!(distancex > tornadicStorm.width * 2.0F)) {
+               double distancexSq = position.distanceToSqr(tornadicStorm.position);
+               if (!(distancexSq > (tornadicStorm.width * 2.0F) * (tornadicStorm.width * 2.0F))) {
                   double windEffect = tornadicStorm.getWind(position);
                   tornadicEffect = Mth.clamp((float)windEffect / Math.max(tornadicStorm.windspeed, 30), tornadicEffect, 1.0F);
                   if (Float.isNaN(tornadicEffect)) {
