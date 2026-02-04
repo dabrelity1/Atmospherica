@@ -104,7 +104,8 @@ public class GameBusEvents {
             Vec3 wind = WindEngine.getWind(movingBlock.getPosition(1.0F), serverLevel, false, true, false);
             movingBlock.addDeltaMovement(wind.multiply(0.05F, 0.0, 0.05F).multiply(0.01F, 0.0, 0.01F));
          }
-         if (Atmospherica.RANDOM.nextInt(2) == 0) {
+         // Optimization: Skip expensive wind damage checks if there are no storms, as base wind noise is insufficient to trigger damage (>45.0F)
+         if (Atmospherica.RANDOM.nextInt(2) == 0 && !weatherHandler.getStorms().isEmpty()) {
             List<ServerPlayer> validPlayers = new ArrayList<>();
             List<ServerPlayer> plrs = new ArrayList<>(serverLevel.players());
             Collections.shuffle(plrs);
@@ -113,7 +114,8 @@ public class GameBusEvents {
                boolean isTooNear = false;
 
                for (ServerPlayer existing : validPlayers) {
-                  if (existing.distanceTo(player) <= 64.0F) {
+                  // Optimization: Use distanceToSqr to avoid expensive square root calculation
+                  if (existing.distanceToSqr(player) <= 4096.0F) {
                      isTooNear = true;
                      break;
                   }
