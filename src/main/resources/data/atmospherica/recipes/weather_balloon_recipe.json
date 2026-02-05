@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ICI",
-    "RRR",
-    "GGG"
+    "WWW",
+    " S ",
+    "IRI"
   ],
   "key": {
     "I": {
@@ -13,15 +13,15 @@
     "R": {
       "item": "minecraft:redstone"
     },
-    "C": {
-      "item": "minecraft:copper_ingot"
+    "S": {
+      "item": "minecraft:string"
     },
-    "G": {
-      "item": "minecraft:gold_ingot"
+    "W": {
+      "tag": "minecraft:wool"
     }
   },
   "result": {
-    "count": 1,
-    "id": "atmospherica:tornado_sensor"
+    "count": 2,
+    "item": "atmospherica:weather_balloon"
   }
 }
