@@ -2,23 +2,23 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "BBB",
-    "RIR",
-    "III"
+    "I  ",
+    "AIT",
+    "I I"
   ],
   "key": {
     "I": {
       "item": "minecraft:iron_ingot"
     },
-    "B": {
-      "item": "minecraft:iron_block"
+    "T": {
+      "item": "atmospherica:tornado_sensor"
     },
-    "R": {
-      "item": "minecraft:redstone"
+    "A": {
+      "item": "minecraft:amethyst_shard"
     }
   },
   "result": {
     "count": 1,
-    "id": "atmospherica:balloon_platform"
+    "item": "atmospherica:wsr88d_core"
   }
 }

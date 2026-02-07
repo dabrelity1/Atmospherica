@@ -99,6 +99,14 @@ config="atmospherica.mixins.json"
     ordering="AFTER"
     side="CLIENT"
 
+# Optional compatibility with Serene Seasons
+[[dependencies.${mod_id}]]
+    modId="sereneseasons"
+    mandatory=false
+    versionRange="[9.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
 # Features are specific properties of the game environment, that you may want to declare you require.
 #[features.${mod_id}]
 #openGLVersion="[3.2,)"

@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "I  ",
-    "AIT",
-    "I I"
+    "ICI",
+    "ITI",
+    "III"
   ],
   "key": {
     "I": {
@@ -13,12 +13,12 @@
     "T": {
       "item": "atmospherica:tornado_sensor"
     },
-    "A": {
-      "item": "minecraft:amethyst_shard"
+    "C": {
+      "item": "minecraft:copper_ingot"
     }
   },
   "result": {
     "count": 1,
-    "id": "atmospherica:wsr88d_core"
+    "item": "atmospherica:radar"
   }
 }
