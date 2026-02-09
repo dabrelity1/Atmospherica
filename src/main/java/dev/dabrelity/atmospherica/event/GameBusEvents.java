@@ -104,7 +104,9 @@ public class GameBusEvents {
             Vec3 wind = WindEngine.getWind(movingBlock.getPosition(1.0F), serverLevel, false, true, false);
             movingBlock.addDeltaMovement(wind.multiply(0.05F, 0.0, 0.05F).multiply(0.01F, 0.0, 0.01F));
          }
-         if (Atmospherica.RANDOM.nextInt(2) == 0) {
+         // Optimization: Skip expensive wind calculations if no storms are active.
+         // Base wind speed without storms is ~36.0F, which is below the damage threshold of 45.0F.
+         if (Atmospherica.RANDOM.nextInt(2) == 0 && weatherHandler != null && !weatherHandler.getStorms().isEmpty()) {
             List<ServerPlayer> validPlayers = new ArrayList<>();
             List<ServerPlayer> plrs = new ArrayList<>(serverLevel.players());
             Collections.shuffle(plrs);
@@ -113,7 +115,8 @@ public class GameBusEvents {
                boolean isTooNear = false;
 
                for (ServerPlayer existing : validPlayers) {
-                  if (existing.distanceTo(player) <= 64.0F) {
+                  // Optimization: Use squared distance to avoid expensive Math.sqrt calls.
+                  if (existing.distanceToSqr(player) <= 4096.0) {
                      isTooNear = true;
                      break;
                   }
@@ -126,7 +129,8 @@ public class GameBusEvents {
 
             for (ServerPlayer player : validPlayers) {
                for (int i = 0; i < 260; i++) {
-                  BlockPos check = player.blockPosition().offset(new Vec3i(Atmospherica.RANDOM.nextInt(-64, 65), 50, Atmospherica.RANDOM.nextInt(-64, 65)));
+                  // Optimization: Use primitive offset method to avoid Vec3i allocation.
+                  BlockPos check = player.blockPosition().offset(Atmospherica.RANDOM.nextInt(-64, 65), 50, Atmospherica.RANDOM.nextInt(-64, 65));
                   check = level.getHeightmapPos(Types.MOTION_BLOCKING, check).below();
                   float wind = (float)WindEngine.getWind(new Vec3(check.getX(), check.getY(), check.getZ()), level, false, true, false, true).length();
                   float chance = wind / 140.0F;
