@@ -126,9 +126,10 @@ public class GameBusEvents {
             }
 
             for (ServerPlayer player : validPlayers) {
+               BlockPos playerPos = player.blockPosition();
                MutableBlockPos mutableCheck = new MutableBlockPos();
                for (int i = 0; i < 260; i++) {
-                  mutableCheck.set(player.blockPosition());
+                  mutableCheck.set(playerPos);
                   mutableCheck.move(Atmospherica.RANDOM.nextInt(-64, 65), 50, Atmospherica.RANDOM.nextInt(-64, 65));
 
                   BlockPos check = level.getHeightmapPos(Types.MOTION_BLOCKING, mutableCheck).below();
