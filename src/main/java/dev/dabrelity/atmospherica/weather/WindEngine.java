@@ -24,16 +24,26 @@ public class WindEngine {
    }
 
    public static double FBM(Vec3 pos, int octaves, float lacunarity, float gain, float amplitude) {
-      double y = 0.0;
+      return FBM(pos.x, pos.y, pos.z, octaves, lacunarity, gain, amplitude);
+   }
+
+   public static double FBM(double x, double y, double z, int octaves, float lacunarity, float gain, float amplitude) {
+      double val = 0.0;
+      double px = x;
+      double py = y;
+      double pz = z;
+
       if (simplexNoise != null) {
          for (int i = 0; i < Math.max(octaves, 1); i++) {
-            y += amplitude * simplexNoise.getValue(pos.x, pos.y, pos.z);
-            pos = pos.multiply(lacunarity, lacunarity, lacunarity);
+            val += amplitude * simplexNoise.getValue(px, py, pz);
+            px *= lacunarity;
+            py *= lacunarity;
+            pz *= lacunarity;
             amplitude *= gain;
          }
       }
 
-      return y;
+      return val;
    }
 
    public static float getSwirl(Vec3 position, Level level, float sampleSize) {
@@ -76,7 +86,7 @@ public class WindEngine {
             float timeScale = 20000.0F;
             float scale = 12000.0F;
             double ang = FBM(
-               new Vec3(position.x / (scale * 3.0F), position.z / (scale * 3.0F), (float)level.getGameTime() / (timeScale * 6.0F)), 5, 2.0F, 0.1F, 1.0F
+               position.x / (scale * 3.0F), position.z / (scale * 3.0F), (float)level.getGameTime() / (timeScale * 6.0F), 5, 2.0F, 0.1F, 1.0F
             );
             ang *= Math.PI;
             Vec3 dir = new Vec3(Math.cos(ang), 0.0, Math.sin(ang)).normalize();
@@ -113,14 +123,14 @@ public class WindEngine {
                         double d = storm.maxWidth / (1.5F + storm.windspeed / 30.0F);
                         float effect = Mth.clamp((float)distance / storm.maxWidth, 0.0F, 1.0F);
                         float noiseX = (float)FBM(
-                           new Vec3(position.x / (storm.maxWidth * 0.5F), position.z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale),
+                           position.x / (storm.maxWidth * 0.5F), position.z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
                            1.0F
                         );
                         float noiseZ = (float)FBM(
-                           new Vec3(position.z / (storm.maxWidth * 0.5F), position.x / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale),
+                           position.z / (storm.maxWidth * 0.5F), position.x / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
@@ -135,7 +145,7 @@ public class WindEngine {
                            0.5F * mult
                         );
                         float noise = (float)FBM(
-                           new Vec3(position.x / (storm.maxWidth * 0.5F), position.z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale),
+                           position.x / (storm.maxWidth * 0.5F), position.z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
@@ -143,7 +153,7 @@ public class WindEngine {
                         );
                         mult *= Mth.clamp(noise, 0.0F, 1.0F) * 0.2F + 0.8F;
                         float noise2 = (float)FBM(
-                           new Vec3(position.x / (storm.maxWidth * 0.1F), position.z / (storm.maxWidth * 0.1F), (float)level.getGameTime() / timeScale),
+                           position.x / (storm.maxWidth * 0.1F), position.z / (storm.maxWidth * 0.1F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
@@ -204,11 +214,9 @@ public class WindEngine {
                         Vec2 facing = v2fWorldPos.add(nearPoint.negated());
                         float behind = -facing.dot(fwd);
                         behind += (float)FBM(
-                              new Vec3(
-                                 position.x / (ServerConfig.stormSize * 2.0),
-                                 position.z / (ServerConfig.stormSize * 2.0),
-                                 (float)level.getGameTime() / timeScale
-                              ),
+                              position.x / (ServerConfig.stormSize * 2.0),
+                              position.z / (ServerConfig.stormSize * 2.0),
+                              (float)level.getGameTime() / timeScale,
                               5,
                               2.0F,
                               0.2F,
@@ -249,9 +257,9 @@ public class WindEngine {
                         }
 
                         float gustNoise = (float)FBM(
-                           new Vec3(
-                              position.z / (ServerConfig.stormSize * 2.0), position.x / (ServerConfig.stormSize * 2.0), (float)level.getGameTime() / timeScale
-                           ),
+                           position.z / (ServerConfig.stormSize * 2.0),
+                           position.x / (ServerConfig.stormSize * 2.0),
+                           (float)level.getGameTime() / timeScale,
                            7,
                            2.0F,
                            0.4F,
