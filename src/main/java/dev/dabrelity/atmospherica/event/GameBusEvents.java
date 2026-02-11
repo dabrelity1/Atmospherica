@@ -126,6 +126,7 @@ public class GameBusEvents {
             }
 
             for (ServerPlayer player : validPlayers) {
+               BlockPos playerPos = player.blockPosition();
                MutableBlockPos mutableCheck = new MutableBlockPos();
                BlockPos playerPos = player.blockPosition();
                for (int i = 0; i < 260; i++) {
