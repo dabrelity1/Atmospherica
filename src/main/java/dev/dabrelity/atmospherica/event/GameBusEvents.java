@@ -124,17 +124,24 @@ public class GameBusEvents {
                }
             }
 
+            BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
             for (ServerPlayer player : validPlayers) {
+               BlockPos playerPos = player.blockPosition();
                for (int i = 0; i < 260; i++) {
-                  BlockPos check = player.blockPosition().offset(new Vec3i(Atmospherica.RANDOM.nextInt(-64, 65), 50, Atmospherica.RANDOM.nextInt(-64, 65)));
-                  check = level.getHeightmapPos(Types.MOTION_BLOCKING, check).below();
-                  float wind = (float)WindEngine.getWind(new Vec3(check.getX(), check.getY(), check.getZ()), level, false, true, false, true).length();
+                  mutablePos.set(
+                     playerPos.getX() + Atmospherica.RANDOM.nextInt(-64, 65),
+                     playerPos.getY() + 50,
+                     playerPos.getZ() + Atmospherica.RANDOM.nextInt(-64, 65)
+                  );
+                  BlockPos surface = level.getHeightmapPos(Types.MOTION_BLOCKING, mutablePos);
+                  mutablePos.set(surface.getX(), surface.getY() - 1, surface.getZ());
+                  float wind = (float)WindEngine.getWind(mutablePos, level, false, true, false, true).length();
                   float chance = wind / 140.0F;
                   if (wind > 45.0F && Atmospherica.RANDOM.nextFloat() <= chance) {
-                     check = check.below(Atmospherica.RANDOM.nextInt(3));
-                     BlockState state = level.getBlockState(check);
+                     mutablePos.move(0, -Atmospherica.RANDOM.nextInt(3), 0);
+                     BlockState state = level.getBlockState(mutablePos);
                      Block block = state.getBlock();
-                     float blockStrength = Storm.getBlockStrength(block, level, check);
+                     float blockStrength = Storm.getBlockStrength(block, level, mutablePos);
                      if (ServerConfig.blockStrengths.containsKey(block)) {
                         blockStrength = (Float)ServerConfig.blockStrengths.get(block);
                      }
@@ -149,7 +156,7 @@ public class GameBusEvents {
                         }
                      }
 
-                     if (!blacklisted && !ServerConfig.blacklistedBlocks.contains(block) && Util.canWindAffect(check.getCenter(), level)) {
+                     if (!blacklisted && !ServerConfig.blacklistedBlocks.contains(block) && Util.canWindAffect(mutablePos.getCenter(), level)) {
                         if (!state.is(Blocks.GLASS) && !state.is(Blocks.GLASS_PANES)) {
                            double percChance = Mth.clamp(Math.pow(Mth.clamp(Math.max(wind - blockStrength, 0.0) / 20.0, 0.0, 1.0), 2.0) + 0.02, 0.0, 1.0);
                            if (wind < blockStrength) {
@@ -159,17 +166,17 @@ public class GameBusEvents {
                            if (block.defaultDestroyTime() < 0.05F
                               && block.defaultDestroyTime() >= 0.0F
                               && Atmospherica.RANDOM.nextFloat() <= percChance
-                              && Util.canWindAffect(check.getCenter(), level)) {
-                              level.removeBlock(check, false);
-                           } else if (Atmospherica.RANDOM.nextFloat() <= percChance && Util.canWindAffect(check.getCenter(), level)) {
+                              && Util.canWindAffect(mutablePos.getCenter(), level)) {
+                              level.removeBlock(mutablePos, false);
+                           } else if (Atmospherica.RANDOM.nextFloat() <= percChance && Util.canWindAffect(mutablePos.getCenter(), level)) {
                               EntityType<MovingBlock> movingType = ModEntities.MOVING_BLOCK.get();
                               MovingBlock movingBlock = movingType.create(level);
                               if (movingBlock != null) {
-                                 movingBlock.setStartPos(check);
+                                 movingBlock.setStartPos(mutablePos.immutable());
                                  movingBlock.setBlockState(state);
-                                 movingBlock.setPos(check.getX(), check.getY(), check.getZ());
-                                 level.removeBlock(check, false);
-                                 if (level.isLoaded(check) && Atmospherica.RANDOM.nextFloat() <= Mth.clamp(1.0F - chance, 0.0F, 1.0F) * 0.4F) {
+                                 movingBlock.setPos(mutablePos.getX(), mutablePos.getY(), mutablePos.getZ());
+                                 level.removeBlock(mutablePos, false);
+                                 if (level.isLoaded(mutablePos) && Atmospherica.RANDOM.nextFloat() <= Mth.clamp(1.0F - chance, 0.0F, 1.0F) * 0.4F) {
                                     level.addFreshEntity(movingBlock);
                                  } else {
                                     movingBlock.discard();
@@ -178,9 +185,9 @@ public class GameBusEvents {
                            }
                         } else {
                            double percChancex = Mth.clamp((wind - 55.0F) / 15.0F, 0.0F, 1.0F);
-                           if (Atmospherica.RANDOM.nextFloat() <= percChancex && Util.canWindAffect(check.getCenter(), level)) {
-                              level.removeBlock(check, false);
-                              level.playSound(null, check, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, Atmospherica.RANDOM.nextFloat(0.8F, 1.2F));
+                           if (Atmospherica.RANDOM.nextFloat() <= percChancex && Util.canWindAffect(mutablePos.getCenter(), level)) {
+                              level.removeBlock(mutablePos, false);
+                              level.playSound(null, mutablePos, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, Atmospherica.RANDOM.nextFloat(0.8F, 1.2F));
                            }
                         }
                      }

@@ -65,10 +65,18 @@ public class WindEngine {
    }
 
    public static Vec3 getWind(Vec3 position, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck, boolean windAnyway) {
+      BlockPos blockPos = new BlockPos((int)position.x, (int)position.y, (int)position.z);
+      return getWindInternal(position, blockPos, level, ignoreStorms, ignoreTornadoes, windCheck, windAnyway);
+   }
+
+   public static Vec3 getWind(BlockPos position, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck, boolean windAnyway) {
+      return getWindInternal(new Vec3(position.getX(), position.getY(), position.getZ()), position, level, ignoreStorms, ignoreTornadoes, windCheck, windAnyway);
+   }
+
+   private static Vec3 getWindInternal(Vec3 position, BlockPos blockPos, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck, boolean windAnyway) {
       Vec3 wind = Vec3.ZERO;
       Vec3 rawWind = Vec3.ZERO;
-      BlockPos blockPos = new BlockPos((int)position.x, (int)position.y, (int)position.z);
-      List<Storm> tornadicStorms = new ArrayList();
+      List<Storm> tornadicStorms = new ArrayList<>();
       if (level == null) {
          Atmospherica.LOGGER.warn("Level is null");
          return wind;
