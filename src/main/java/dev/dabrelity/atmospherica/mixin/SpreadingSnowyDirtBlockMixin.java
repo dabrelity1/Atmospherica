@@ -14,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin({SpreadingSnowyDirtBlock.class})
 public class SpreadingSnowyDirtBlockMixin {
    @Inject(
-      method = {"m_213898_"},
+      method = {"randomTick"},
       at = {@At("HEAD")},
-      remap = false
+      remap = true
    )
    public void editRandomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo callbackInfo) {
       Util.checkLogs(state, level, pos, random.nextInt(4) - 1);

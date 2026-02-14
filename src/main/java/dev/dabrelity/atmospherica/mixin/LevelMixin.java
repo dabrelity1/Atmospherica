@@ -33,10 +33,10 @@ public class LevelMixin {
    }
 
    @Inject(
-      method = {"m_46758_"},
+      method = {"isRainingAt"},
       at = {@At("RETURN")},
       cancellable = true,
-      remap = false
+      remap = true
    )
    public void editRainingAt(BlockPos pos, CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
       Level level = (Level)(Object)this;
@@ -100,10 +100,10 @@ public class LevelMixin {
    }
 
    @Inject(
-      method = {"m_46722_"},
+      method = {"getRainLevel"},
       at = {@At("RETURN")},
       cancellable = true,
-      remap = false
+      remap = true
    )
    public void editRain(float delta, CallbackInfoReturnable<Float> callbackInfoReturnable) {
       Level level = (Level)(Object)this;
@@ -116,10 +116,10 @@ public class LevelMixin {
    }
 
    @Inject(
-      method = {"m_46661_"},
+      method = {"getThunderLevel"},
       at = {@At("RETURN")},
       cancellable = true,
-      remap = false
+      remap = true
    )
    public void editThunder(float delta, CallbackInfoReturnable<Float> callbackInfoReturnable) {
       Level level = (Level)(Object)this;
