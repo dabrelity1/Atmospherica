@@ -31,7 +31,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 public class EntityRotFX extends TextureSheetParticle {
    public static final ParticleRenderType SORTED_TRANSLUCENT = new ParticleRenderType() {
@@ -231,12 +230,8 @@ public class EntityRotFX extends TextureSheetParticle {
       float f2 = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3d.z());
       Quaternionf quaternion;
       if (this.facePlayer || this.rotationPitch == 0.0F && this.rotationYaw == 0.0F) {
-         try {
-            quaternion = (Quaternionf)renderInfo.rotation().clone();
-            quaternion.mul(Axis.ZP.rotationDegrees(this.rotationRoll));
-         } catch (CloneNotSupportedException var16) {
-            quaternion = renderInfo.rotation();
-         }
+         quaternion = new Quaternionf(renderInfo.rotation());
+         quaternion.mul(Axis.ZP.rotationDegrees(this.rotationRoll));
       } else {
          quaternion = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
          if (this.facePlayerYaw) {
@@ -248,17 +243,48 @@ public class EntityRotFX extends TextureSheetParticle {
          quaternion.mul(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, this.prevRotationPitch, this.rotationPitch)));
       }
 
-      Vector3f[] v3f = new Vector3f[]{
-         new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
-      };
       float scale = this.getQuadSize(partialTicks);
+      float qx = quaternion.x();
+      float qy = quaternion.y();
+      float qz = quaternion.z();
+      float qw = quaternion.w();
 
-      for (int i = 0; i < 4; i++) {
-         Vector3f vector3f = v3f[i];
-         vector3f.rotate(quaternion);
-         vector3f.mul(scale);
-         vector3f.add(f, f1, f2);
-      }
+      float xx = qx * qx;
+      float yy = qy * qy;
+      float zz = qz * qz;
+      float xy = qx * qy;
+      float xz = qx * qz;
+      float yz = qy * qz;
+      float wx = qw * qx;
+      float wy = qw * qy;
+      float wz = qw * qz;
+
+      float m00 = 1.0F - 2.0F * (yy + zz);
+      float m01 = 2.0F * (xy - wz);
+      float m10 = 2.0F * (xy + wz);
+      float m11 = 1.0F - 2.0F * (xx + zz);
+      float m20 = 2.0F * (xz - wy);
+      float m21 = 2.0F * (yz + wx);
+
+      m00 *= scale;
+      m01 *= scale;
+      m10 *= scale;
+      m11 *= scale;
+      m20 *= scale;
+      m21 *= scale;
+
+      float v0x = (-m00 - m01) + f;
+      float v0y = (-m10 - m11) + f1;
+      float v0z = (-m20 - m21) + f2;
+      float v1x = (-m00 + m01) + f;
+      float v1y = (-m10 + m11) + f1;
+      float v1z = (-m20 + m21) + f2;
+      float v2x = (m00 + m01) + f;
+      float v2y = (m10 + m11) + f1;
+      float v2z = (m20 + m21) + f2;
+      float v3x = (m00 - m01) + f;
+      float v3y = (m10 - m11) + f1;
+      float v3z = (m20 - m21) + f2;
 
       float u0 = this.getU0();
       float u1 = this.getU1();
@@ -271,10 +297,10 @@ public class EntityRotFX extends TextureSheetParticle {
          j = this.lastNonZeroBrightness;
       }
 
-      buffer.vertex(v3f[0].x, v3f[0].y, v3f[0].z).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[1].x, v3f[1].y, v3f[1].z).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[2].x, v3f[2].y, v3f[2].z).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[3].x, v3f[3].y, v3f[3].z).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(v0x, v0y, v0z).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(v1x, v1y, v1z).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(v2x, v2y, v2z).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(v3x, v3y, v3z).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
    }
 
    public void move(double x, double y, double z) {
