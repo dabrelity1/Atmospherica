@@ -29,10 +29,10 @@ public class LevelRendererMixin {
    private int rainSoundTimer = 0;
 
    @Inject(
-      method = {"m_109693_"},
+      method = {"tickRain"},
       at = {@At("HEAD")},
       cancellable = true,
-      remap = false
+      remap = true
    )
    public void editTickRain(Camera camera, CallbackInfo callbackInfo) {
       Player player = Minecraft.getInstance().player;
@@ -88,20 +88,20 @@ public class LevelRendererMixin {
    }
 
    @Inject(
-      method = {"m_109703_"},
+      method = {"renderSnowAndRain"},
       at = {@At("HEAD")},
       cancellable = true,
-      remap = false
+      remap = true
    )
    public void disableVanillaRainAndSnow(LightTexture lightmapIn, float partialTicks, double xIn, double yIn, double zIn, CallbackInfo callbackInfo) {
       callbackInfo.cancel();
    }
 
    @Inject(
-      method = {"m_253054_"},
+      method = {"renderClouds"},
       at = {@At("HEAD")},
       cancellable = true,
-      remap = false
+      remap = true
    )
    public void disableClouds(
       PoseStack poseStack,
