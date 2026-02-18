@@ -89,10 +89,18 @@ public class WindEngine {
                position.x / (scale * 3.0F), position.z / (scale * 3.0F), (float)level.getGameTime() / (timeScale * 6.0F), 5, 2.0F, 0.1F, 1.0F
             );
             ang *= Math.PI;
-            Vec3 dir = new Vec3(Math.cos(ang), 0.0, Math.sin(ang)).normalize();
+
+            // Optimization: Avoid unnecessary Vec3 allocations for direction and multiplication
+            // Math.cos/sin already provide a normalized vector (length 1), so .normalize() is redundant.
+            double windX = Math.cos(ang);
+            double windZ = Math.sin(ang);
+
             double speed = Math.max(simplexNoise.getValue(-position.z / scale, -position.x / scale, -((float)level.getGameTime()) / timeScale) + 1.0, 0.0)
                * 10.0;
-            wind = wind.add(dir.multiply(speed, speed, speed));
+
+            // Directly construct the wind vector with speed applied
+            // Use add() to preserve accumulator pattern, though wind is ZERO here.
+            wind = wind.add(windX * speed, 0.0, windZ * speed);
             WeatherHandler weatherHandler;
             if (level.isClientSide()) {
                weatherHandler = GameBusClientEvents.weatherHandler;
