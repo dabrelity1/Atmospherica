@@ -65,34 +65,54 @@ public class WindEngine {
    }
 
    public static Vec3 getWind(Vec3 position, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck, boolean windAnyway) {
-      Vec3 wind = Vec3.ZERO;
-      Vec3 rawWind = Vec3.ZERO;
-      BlockPos blockPos = new BlockPos((int)position.x, (int)position.y, (int)position.z);
-      List<Storm> tornadicStorms = new ArrayList();
+      return getWind(position.x, position.y, position.z, level, ignoreStorms, ignoreTornadoes, windCheck, windAnyway);
+   }
+
+   public static Vec3 getWind(double x, double y, double z, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck, boolean windAnyway) {
+      double windX = 0;
+      double windY = 0;
+      double windZ = 0;
+      double rawWindX = 0;
+      double rawWindY = 0;
+      double rawWindZ = 0;
+
+      BlockPos blockPos = new BlockPos((int)x, (int)y, (int)z);
+      List<Storm> tornadicStorms = new ArrayList<>();
       if (level == null) {
          Atmospherica.LOGGER.warn("Level is null");
-         return wind;
+         return Vec3.ZERO;
       } else {
          int worldHeight = level.getHeightmapPos(Types.MOTION_BLOCKING, blockPos).getY();
          if (windCheck && !windAnyway) {
-            if (!Util.canWindAffect(position, level)) {
-               return wind;
+            if (!Util.canWindAffect(new Vec3(x, y, z), level)) {
+               return Vec3.ZERO;
             }
-         } else if (!windAnyway && position.y < worldHeight) {
-            return wind;
+         } else if (!windAnyway && y < worldHeight) {
+            return Vec3.ZERO;
          }
 
          if (simplexNoise != null) {
             float timeScale = 20000.0F;
             float scale = 12000.0F;
             double ang = FBM(
-               position.x / (scale * 3.0F), position.z / (scale * 3.0F), (float)level.getGameTime() / (timeScale * 6.0F), 5, 2.0F, 0.1F, 1.0F
+               x / (scale * 3.0F), z / (scale * 3.0F), (float)level.getGameTime() / (timeScale * 6.0F), 5, 2.0F, 0.1F, 1.0F
             );
             ang *= Math.PI;
-            Vec3 dir = new Vec3(Math.cos(ang), 0.0, Math.sin(ang)).normalize();
-            double speed = Math.max(simplexNoise.getValue(-position.z / scale, -position.x / scale, -((float)level.getGameTime()) / timeScale) + 1.0, 0.0)
+
+            double dirX = Math.cos(ang);
+            double dirZ = Math.sin(ang);
+            double dirLen = Math.sqrt(dirX * dirX + dirZ * dirZ);
+            if (dirLen > 1.0E-5D) {
+               dirX /= dirLen;
+               dirZ /= dirLen;
+            }
+
+            double speed = Math.max(simplexNoise.getValue(-z / scale, -x / scale, -((float)level.getGameTime()) / timeScale) + 1.0, 0.0)
                * 10.0;
-            wind = wind.add(dir.multiply(speed, speed, speed));
+
+            windX += dirX * speed;
+            windZ += dirZ * speed;
+
             WeatherHandler weatherHandler;
             if (level.isClientSide()) {
                weatherHandler = GameBusClientEvents.weatherHandler;
@@ -107,11 +127,30 @@ public class WindEngine {
                         tornadicStorms.add(storm);
                      }
 
-                     double distance = position.multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+                     double dx = x - storm.position.x;
+                     double dz = z - storm.position.z;
+                     double distance = Math.sqrt(dx * dx + dz * dz);
+
                      if (storm.stormType == 2) {
-                        Vec3 relativePos = position.subtract(storm.position);
-                        Vec3 inward = new Vec3(-relativePos.x, 0.0, -relativePos.z).normalize();
-                        Vec3 rotational = new Vec3(relativePos.z, 0.0, -relativePos.x).normalize();
+                        double relX = x - storm.position.x;
+                        double relZ = z - storm.position.z;
+
+                        double inX = -relX;
+                        double inZ = -relZ;
+                        double inLen = Math.sqrt(inX * inX + inZ * inZ);
+                        if (inLen > 1.0E-5D) {
+                           inX /= inLen;
+                           inZ /= inLen;
+                        }
+
+                        double rotX = relZ;
+                        double rotZ = -relX;
+                        double rotLen = Math.sqrt(rotX * rotX + rotZ * rotZ);
+                        if (rotLen > 1.0E-5D) {
+                           rotX /= rotLen;
+                           rotZ /= rotLen;
+                        }
+
                         double pullStrngth = storm.windspeed * 0.3F;
                         double rotStrngth = storm.windspeed * 0.7F;
                         float mult = (float)Math.pow(1.0 - Mth.clamp(distance / storm.maxWidth, 0.0, 1.0), 3.0);
@@ -123,21 +162,24 @@ public class WindEngine {
                         double d = storm.maxWidth / (1.5F + storm.windspeed / 30.0F);
                         float effect = Mth.clamp((float)distance / storm.maxWidth, 0.0F, 1.0F);
                         float noiseX = (float)FBM(
-                           position.x / (storm.maxWidth * 0.5F), position.z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
+                           x / (storm.maxWidth * 0.5F), z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
                            1.0F
                         );
                         float noiseZ = (float)FBM(
-                           position.z / (storm.maxWidth * 0.5F), position.x / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
+                           z / (storm.maxWidth * 0.5F), x / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
                            1.0F
                         );
-                        relativePos = relativePos.add(new Vec3(noiseX * storm.maxWidth * 0.3F * effect, 0.0, noiseZ * storm.maxWidth * 0.3F * effect));
-                        double angle = Math.atan2(relativePos.z, relativePos.x) - distance / d;
+
+                        relX += noiseX * storm.maxWidth * 0.3F * effect;
+                        relZ += noiseZ * storm.maxWidth * 0.3F * effect;
+
+                        double angle = Math.atan2(relZ, relX) - distance / d;
                         float bands = (float)Math.sin((angle + Math.toRadians(storm.tickCount / 8.0F)) * 4.0);
                         mult += Mth.lerp(
                            1.0F - Mth.clamp((float)distance / (storm.maxWidth * 0.35F), 0.0F, 1.0F),
@@ -145,7 +187,7 @@ public class WindEngine {
                            0.5F * mult
                         );
                         float noise = (float)FBM(
-                           position.x / (storm.maxWidth * 0.5F), position.z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
+                           x / (storm.maxWidth * 0.5F), z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
@@ -153,7 +195,7 @@ public class WindEngine {
                         );
                         mult *= Mth.clamp(noise, 0.0F, 1.0F) * 0.2F + 0.8F;
                         float noise2 = (float)FBM(
-                           position.x / (storm.maxWidth * 0.1F), position.z / (storm.maxWidth * 0.1F), (float)level.getGameTime() / timeScale,
+                           x / (storm.maxWidth * 0.1F), z / (storm.maxWidth * 0.1F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
@@ -165,35 +207,61 @@ public class WindEngine {
                            Mth.clamp(distance / (storm.maxWidth * 0.1F), 0.0, 1.0), Mth.lerp(Mth.clamp(storm.windspeed / 120.0F, 0.0F, 1.0F), 0.5F, 4.0F)
                         );
                         mult *= Mth.lerp((float)Math.pow(Mth.clamp(storm.windspeed / 65.0F, 0.0F, 1.0F), 2.0), 1.0F, eye);
-                        Vec3 vec = inward.multiply(pullStrngth, 0.0, pullStrngth)
-                           .add(rotational.multiply(rotStrngth, 0.0, rotStrngth))
-                           .multiply(mult, 0.0, mult);
-                        if (vec.length() > storm.windspeed) {
-                           double dif = vec.length() - storm.windspeed;
-                           vec = vec.subtract(new Vec3(dif, 0.0, dif));
+
+                        double vecX = (inX * pullStrngth + rotX * rotStrngth) * mult;
+                        double vecY = 0.0;
+                        double vecZ = (inZ * pullStrngth + rotZ * rotStrngth) * mult;
+
+                        double vecLen = Math.sqrt(vecX * vecX + vecZ * vecZ);
+
+                        if (vecLen > storm.windspeed) {
+                           double dif = vecLen - storm.windspeed;
+                           vecX -= dif;
+                           vecZ -= dif;
                         }
 
-                        rawWind = rawWind.add(vec);
+                        rawWindX += vecX;
+                        rawWindZ += vecZ;
 
                         for (Vorticy vorticy : storm.vorticies) {
                            Vec3 pos = vorticy.getPosition();
-                           Vec3 rPos = position.subtract(pos);
-                           Vec3 in = new Vec3(-rPos.x, 0.0, -rPos.z).normalize();
-                           Vec3 rot = new Vec3(rPos.z, 0.0, -rPos.x).normalize();
+                           double rPosX = x - pos.x;
+                           double rPosZ = z - pos.z;
+
+                           double inVx = -rPosX;
+                           double inVz = -rPosZ;
+                           double inVLen = Math.sqrt(inVx * inVx + inVz * inVz);
+                           if (inVLen > 1.0E-5D) {
+                              inVx /= inVLen;
+                              inVz /= inVLen;
+                           }
+
+                           double rotVx = rPosZ;
+                           double rotVz = -rPosX;
+                           double rotVLen = Math.sqrt(rotVx * rotVx + rotVz * rotVz);
+                           if (rotVLen > 1.0E-5D) {
+                              rotVx /= rotVLen;
+                              rotVz /= rotVLen;
+                           }
+
                            float width = vorticy.getWidth();
-                           double dist = position.multiply(1.0, 0.0, 1.0).distanceTo(pos.multiply(1.0, 0.0, 1.0));
+                           double dist = Math.sqrt(rPosX * rPosX + rPosZ * rPosZ);
                            double pullStrn = vorticy.windspeedMult * storm.windspeed * 0.3F;
                            double rotStrn = vorticy.windspeedMult * storm.windspeed * 0.7F;
                            float m = (float)Math.pow(1.0F - Mth.clamp((float)dist / width, 0.0F, 1.0F), 3.75);
                            m *= Mth.clamp((float)dist / (width * 0.1F), 0.0F, 1.0F);
                            m *= 7.0F;
-                           Vec3 v = in.multiply(pullStrn, 0.0, pullStrn).add(rot.multiply(rotStrn, 0.0, rotStrn)).multiply(m, 0.0, m);
-                           rawWind = rawWind.add(v);
+
+                           double vx = (inVx * pullStrn + rotVx * rotStrn) * m;
+                           double vz = (inVz * pullStrn + rotVz * rotStrn) * m;
+
+                           rawWindX += vx;
+                           rawWindZ += vz;
                         }
                      }
 
                      if (storm.stormType == 1) {
-                        Vec2 v2fWorldPos = new Vec2((float)position.x, (float)position.z);
+                        Vec2 v2fWorldPos = new Vec2((float)x, (float)z);
                         Vec2 stormVel = new Vec2((float)storm.velocity.x, (float)storm.velocity.z);
                         Vec2 v2fStormPos = new Vec2((float)storm.position.x, (float)storm.position.z);
                         Vec2 right = new Vec2(stormVel.y, -stormVel.x).normalized();
@@ -214,8 +282,8 @@ public class WindEngine {
                         Vec2 facing = v2fWorldPos.add(nearPoint.negated());
                         float behind = -facing.dot(fwd);
                         behind += (float)FBM(
-                              position.x / (ServerConfig.stormSize * 2.0),
-                              position.z / (ServerConfig.stormSize * 2.0),
+                              x / (ServerConfig.stormSize * 2.0),
+                              z / (ServerConfig.stormSize * 2.0),
                               (float)level.getGameTime() / timeScale,
                               5,
                               2.0F,
@@ -257,8 +325,8 @@ public class WindEngine {
                         }
 
                         float gustNoise = (float)FBM(
-                           position.z / (ServerConfig.stormSize * 2.0),
-                           position.x / (ServerConfig.stormSize * 2.0),
+                           z / (ServerConfig.stormSize * 2.0),
+                           x / (ServerConfig.stormSize * 2.0),
                            (float)level.getGameTime() / timeScale,
                            7,
                            2.0F,
@@ -275,16 +343,35 @@ public class WindEngine {
                            Mth.clamp(behind / ((float)ServerConfig.stormSize * 3.0F), 0.0F, 1.0F), (float)Math.pow(0.8F + gustNoise * 0.5F, 1.5), 0.5F
                         );
                         perc *= Mth.sqrt(1.0F - Mth.clamp(d / sze, 0.0F, 1.0F));
-                        wind = wind.add(
-                           storm.velocity
-                              .multiply(perc * 13.0F * ServerConfig.squallStrengthMultiplier, 0.0, perc * 13.0F * ServerConfig.squallStrengthMultiplier)
-                        );
+
+                        double stormVelX = storm.velocity.x;
+                        double stormVelZ = storm.velocity.z;
+                        double factor = perc * 13.0F * ServerConfig.squallStrengthMultiplier;
+
+                        windX += stormVelX * factor;
+                        windZ += stormVelZ * factor;
                      }
 
                      if (storm.stormType == 0) {
-                        Vec3 relativePosx = position.subtract(storm.position);
-                        Vec3 inwardx = new Vec3(-relativePosx.x, 0.0, -relativePosx.z).normalize();
-                        Vec3 rotationalx = new Vec3(relativePosx.z, 0.0, -relativePosx.x).normalize();
+                        double relX = x - storm.position.x;
+                        double relZ = z - storm.position.z;
+
+                        double inX = -relX;
+                        double inZ = -relZ;
+                        double inLen = Math.sqrt(inX * inX + inZ * inZ);
+                        if (inLen > 1.0E-5D) {
+                           inX /= inLen;
+                           inZ /= inLen;
+                        }
+
+                        double rotX = relZ;
+                        double rotZ = -relX;
+                        double rotLen = Math.sqrt(rotX * rotX + rotZ * rotZ);
+                        if (rotLen > 1.0E-5D) {
+                           rotX /= rotLen;
+                           rotZ /= rotLen;
+                        }
+
                         double pullStrngthx = 1.0 - Mth.clamp(distance / (ServerConfig.stormSize * 4.0), 0.0, 1.0);
                         double rotStrngthx = 1.0 - Mth.clamp(distance / ServerConfig.stormSize, 0.0, 1.0);
                         if (storm.stage < 1) {
@@ -304,44 +391,65 @@ public class WindEngine {
 
                         pullStrngthx *= 0.5;
                         rotStrngthx *= 6.0;
-                        Vec3 vec = inwardx.multiply(pullStrngthx, 0.0, pullStrngthx)
-                           .add(rotationalx.multiply(rotStrngthx, 0.0, rotStrngthx))
-                           .multiply(20.0, 20.0, 20.0);
-                        wind = wind.add(vec);
+
+                        double vecX = (inX * pullStrngthx + rotX * rotStrngthx) * 20.0;
+                        double vecZ = (inZ * pullStrngthx + rotZ * rotStrngthx) * 20.0;
+
+                        windX += vecX;
+                        windZ += vecZ;
                      }
                   }
                }
             }
          }
 
-         if (wind.length() > 30.0) {
-            double over = wind.length() - 40.0;
+         double windLen = Math.sqrt(windX * windX + windZ * windZ); // y is 0
+
+         if (windLen > 30.0) {
+            double over = windLen - 40.0;
             double val = 30.0 + over / 3.0;
-            wind = wind.normalize().multiply(val, val, val);
+            if (windLen > 1.0E-5D) {
+               double factor = val / windLen;
+               windX *= factor;
+               windZ *= factor;
+            }
          }
 
          if (blockPos.getY() > 85) {
             float val = Mth.clamp((blockPos.getY() - 85) / 40.0F, 0.0F, 1.0F) / 3.0F + 1.0F;
-            wind = wind.multiply(val, val, val);
+            windX *= val;
+            windZ *= val;
          }
 
-         wind = wind.add(rawWind);
+         windX += rawWindX;
+         windZ += rawWindZ;
+
          int heightAbove = blockPos.getY() - worldHeight;
          if (heightAbove > 0) {
             float val = Mth.clamp(heightAbove / 15.0F, 0.0F, 1.0F) / 3.0F + 1.0F;
-            wind = wind.multiply(val, val, val);
+            windX *= val;
+            windZ *= val;
          }
 
          float tornadicEffect = 0.0F;
          Vec3 tornadicWind = Vec3.ZERO;
+         // Tornadic wind calculation kept as Vec3 for safety as it uses getWind(position) internally which is recursive
+         // But wait, tornadicStorm.getWind(position) calls Storm.getWind? Or WindEngine?
+         // Storm.getWind likely uses local logic.
+         // Let's keep Vec3 here for now to avoid breaking complex tornado logic.
+
          if (!ignoreStorms && !ignoreTornadoes) {
             for (Storm tornadicStorm : tornadicStorms) {
-               Vec3 relativePosx = position.subtract(tornadicStorm.position);
+               // We need Vec3 here for distanceTo and for clean logic matching existing code
+               // Since tornadic storms are rare (stage >= 3), this allocation is acceptable.
+               Vec3 positionVec = new Vec3(x, y, z);
+
+               Vec3 relativePosx = positionVec.subtract(tornadicStorm.position);
                Vec3 inwardx = new Vec3(-relativePosx.x, 0.0, -relativePosx.z).normalize();
                Vec3 rotationalx = new Vec3(relativePosx.z, 0.0, -relativePosx.x).normalize();
-               double distancex = position.distanceTo(tornadicStorm.position);
+               double distancex = positionVec.distanceTo(tornadicStorm.position);
                if (!(distancex > tornadicStorm.width * 2.0F)) {
-                  double windEffect = tornadicStorm.getWind(position);
+                  double windEffect = tornadicStorm.getWind(positionVec);
                   tornadicEffect = Mth.clamp((float)windEffect / Math.max(tornadicStorm.windspeed, 30), tornadicEffect, 1.0F);
                   if (Float.isNaN(tornadicEffect)) {
                      tornadicEffect = 0.0F;
@@ -354,7 +462,14 @@ public class WindEngine {
             }
          }
 
-         return wind.lerp(tornadicWind, tornadicEffect);
+         // lerp
+         // wind.lerp(tornadicWind, tornadicEffect)
+         // this + (target - this) * delta
+         double finalX = windX + (tornadicWind.x - windX) * tornadicEffect;
+         double finalY = windY + (tornadicWind.y - windY) * tornadicEffect;
+         double finalZ = windZ + (tornadicWind.z - windZ) * tornadicEffect;
+
+         return new Vec3(finalX, finalY, finalZ);
       }
    }
 

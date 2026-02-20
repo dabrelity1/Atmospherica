@@ -125,13 +125,20 @@ public class GameBusEvents {
             }
 
             for (ServerPlayer player : validPlayers) {
+               BlockPos.MutableBlockPos check = new BlockPos.MutableBlockPos();
+               int playerX = Mth.floor(player.getX());
+               int playerZ = Mth.floor(player.getZ());
+
                for (int i = 0; i < 260; i++) {
-                  BlockPos check = player.blockPosition().offset(new Vec3i(Atmospherica.RANDOM.nextInt(-64, 65), 50, Atmospherica.RANDOM.nextInt(-64, 65)));
-                  check = level.getHeightmapPos(Types.MOTION_BLOCKING, check).below();
-                  float wind = (float)WindEngine.getWind(new Vec3(check.getX(), check.getY(), check.getZ()), level, false, true, false, true).length();
+                  int px = playerX + Atmospherica.RANDOM.nextInt(-64, 65);
+                  int pz = playerZ + Atmospherica.RANDOM.nextInt(-64, 65);
+                  int py = level.getHeight(Types.MOTION_BLOCKING, px, pz) - 1;
+                  check.set(px, py, pz);
+
+                  float wind = (float)WindEngine.getWind(check.getX(), check.getY(), check.getZ(), level, false, true, false, true).length();
                   float chance = wind / 140.0F;
                   if (wind > 45.0F && Atmospherica.RANDOM.nextFloat() <= chance) {
-                     check = check.below(Atmospherica.RANDOM.nextInt(3));
+                     check.move(0, -Atmospherica.RANDOM.nextInt(3), 0);
                      BlockState state = level.getBlockState(check);
                      Block block = state.getBlock();
                      float blockStrength = Storm.getBlockStrength(block, level, check);
@@ -165,7 +172,7 @@ public class GameBusEvents {
                               EntityType<MovingBlock> movingType = ModEntities.MOVING_BLOCK.get();
                               MovingBlock movingBlock = movingType.create(level);
                               if (movingBlock != null) {
-                                 movingBlock.setStartPos(check);
+                                 movingBlock.setStartPos(check.immutable());
                                  movingBlock.setBlockState(state);
                                  movingBlock.setPos(check.getX(), check.getY(), check.getZ());
                                  level.removeBlock(check, false);
