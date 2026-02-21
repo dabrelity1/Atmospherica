@@ -259,7 +259,7 @@ public class RadarBlockEntity extends BlockEntity {
                data.putString("packetCommand", "Radar");
                data.putString("command", "syncBiomes");
                data.put("blockPos", NbtUtils.writeBlockPos(blockPos));
-               ModNetworking.clientSendToSever(data);
+               ModNetworking.clientSendToServer(data);
             }
          }
       } else {

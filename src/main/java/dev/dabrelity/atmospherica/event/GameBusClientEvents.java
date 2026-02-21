@@ -556,7 +556,7 @@ public class GameBusClientEvents {
          CompoundTag data = new CompoundTag();
          data.putString("command", "syncFull");
          data.putString("packetCommand", "WeatherData");
-         ModNetworking.clientSendToSever(data);
+         ModNetworking.clientSendToServer(data);
       }
    }
 }
