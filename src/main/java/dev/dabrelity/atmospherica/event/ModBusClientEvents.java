@@ -52,7 +52,6 @@ public class ModBusClientEvents {
 
    @SubscribeEvent
    public static void onClientSetup(FMLClientSetupEvent event) {
-      EntityRenderers.register(ModEntities.MOVING_BLOCK.get(), MovingBlockRenderer::new);
       registerItemProp(
          event,
          (Item)ModItems.CONNECTOR.get(),
@@ -77,5 +76,6 @@ public class ModBusClientEvents {
       event.registerBlockEntityRenderer(ModBlockEntities.RADAR_BE.get(), RadarRenderer::new);
       event.registerBlockEntityRenderer(ModBlockEntities.WEATHER_PLATFORM_BE.get(), WeatherPlatformRenderer::new);
       event.registerBlockEntityRenderer(ModBlockEntities.SOUNDING_VIEWER_BE.get(), SoundingViewerRenderer::new);
+      event.registerEntityRenderer(ModEntities.MOVING_BLOCK.get(), MovingBlockRenderer::new);
    }
 }

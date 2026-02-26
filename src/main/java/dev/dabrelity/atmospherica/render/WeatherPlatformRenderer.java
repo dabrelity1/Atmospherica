@@ -21,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 public class WeatherPlatformRenderer<T extends BlockEntity> implements BlockEntityRenderer<T> {
    private static Map<String, ResourceLocation> resLocMap = Maps.newHashMap();
    private static Map<String, Material> materialMap = Maps.newHashMap();
-   protected final WeatherBalloonModel model = new WeatherBalloonModel(Minecraft.getInstance().getEntityModels().bakeLayer(WeatherBalloonModel.LAYER_LOCATION));
+   protected final WeatherBalloonModel model;
 
    public static Material getMaterial(String path) {
       return (Material)materialMap.computeIfAbsent(path, m -> createMaterial(path));
@@ -52,6 +52,7 @@ public class WeatherPlatformRenderer<T extends BlockEntity> implements BlockEnti
    }
 
    public WeatherPlatformRenderer(Context context) {
+      this.model = new WeatherBalloonModel(context.bakeLayer(WeatherBalloonModel.LAYER_LOCATION));
    }
 
    public void render(T blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource multiBufferSource, int combinedLightIn, int combinedOverlayIn) {
