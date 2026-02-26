@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public class AnemometerRenderer<T extends BlockEntity> implements BlockEntityRenderer<T> {
    private static Map<String, ResourceLocation> resLocMap = Maps.newHashMap();
    private static Map<String, Material> materialMap = Maps.newHashMap();
-   protected final AnemometerModel model = new AnemometerModel(Minecraft.getInstance().getEntityModels().bakeLayer(AnemometerModel.LAYER_LOCATION));
+   protected final AnemometerModel model;
 
    public static Material getMaterial(String path) {
       return (Material)materialMap.computeIfAbsent(path, m -> createMaterial(path));
@@ -41,6 +41,7 @@ public class AnemometerRenderer<T extends BlockEntity> implements BlockEntityRen
    }
 
    public AnemometerRenderer(Context context) {
+      this.model = new AnemometerModel(context.bakeLayer(AnemometerModel.LAYER_LOCATION));
    }
 
    public void render(T blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource multiBufferSource, int combinedLightIn, int combinedOverlayIn) {
