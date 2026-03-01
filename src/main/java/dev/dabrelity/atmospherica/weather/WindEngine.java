@@ -107,7 +107,9 @@ public class WindEngine {
                         tornadicStorms.add(storm);
                      }
 
-                     double distance = position.multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+                     double dx = position.x - storm.position.x;
+                     double dz = position.z - storm.position.z;
+                     double distance = Math.sqrt(dx * dx + dz * dz);
                      if (storm.stormType == 2) {
                         Vec3 relativePos = position.subtract(storm.position);
                         Vec3 inward = new Vec3(-relativePos.x, 0.0, -relativePos.z).normalize();
@@ -181,7 +183,9 @@ public class WindEngine {
                            Vec3 in = new Vec3(-rPos.x, 0.0, -rPos.z).normalize();
                            Vec3 rot = new Vec3(rPos.z, 0.0, -rPos.x).normalize();
                            float width = vorticy.getWidth();
-                           double dist = position.multiply(1.0, 0.0, 1.0).distanceTo(pos.multiply(1.0, 0.0, 1.0));
+                           double dx2 = position.x - pos.x;
+                           double dz2 = position.z - pos.z;
+                           double dist = Math.sqrt(dx2 * dx2 + dz2 * dz2);
                            double pullStrn = vorticy.windspeedMult * storm.windspeed * 0.3F;
                            double rotStrn = vorticy.windspeedMult * storm.windspeed * 0.7F;
                            float m = (float)Math.pow(1.0F - Mth.clamp((float)dist / width, 0.0F, 1.0F), 3.75);
@@ -339,7 +343,10 @@ public class WindEngine {
                Vec3 relativePosx = position.subtract(tornadicStorm.position);
                Vec3 inwardx = new Vec3(-relativePosx.x, 0.0, -relativePosx.z).normalize();
                Vec3 rotationalx = new Vec3(relativePosx.z, 0.0, -relativePosx.x).normalize();
-               double distancex = position.distanceTo(tornadicStorm.position);
+               double dxTorn = position.x - tornadicStorm.position.x;
+               double dyTorn = position.y - tornadicStorm.position.y;
+               double dzTorn = position.z - tornadicStorm.position.z;
+               double distancex = Math.sqrt(dxTorn * dxTorn + dyTorn * dyTorn + dzTorn * dzTorn);
                if (!(distancex > tornadicStorm.width * 2.0F)) {
                   double windEffect = tornadicStorm.getWind(position);
                   tornadicEffect = Mth.clamp((float)windEffect / Math.max(tornadicStorm.windspeed, 30), tornadicEffect, 1.0F);
