@@ -107,7 +107,7 @@ public class WindEngine {
                         tornadicStorms.add(storm);
                      }
 
-                     double distance = position.multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+                     double distance = Util.distance2D(position, storm.position);
                      if (storm.stormType == 2) {
                         Vec3 relativePos = position.subtract(storm.position);
                         Vec3 inward = new Vec3(-relativePos.x, 0.0, -relativePos.z).normalize();
@@ -181,7 +181,7 @@ public class WindEngine {
                            Vec3 in = new Vec3(-rPos.x, 0.0, -rPos.z).normalize();
                            Vec3 rot = new Vec3(rPos.z, 0.0, -rPos.x).normalize();
                            float width = vorticy.getWidth();
-                           double dist = position.multiply(1.0, 0.0, 1.0).distanceTo(pos.multiply(1.0, 0.0, 1.0));
+                           double dist = Util.distance2D(position, pos);
                            double pullStrn = vorticy.windspeedMult * storm.windspeed * 0.3F;
                            double rotStrn = vorticy.windspeedMult * storm.windspeed * 0.7F;
                            float m = (float)Math.pow(1.0F - Mth.clamp((float)dist / width, 0.0F, 1.0F), 3.75);
