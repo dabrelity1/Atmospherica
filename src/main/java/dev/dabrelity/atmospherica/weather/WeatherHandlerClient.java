@@ -6,6 +6,7 @@ import dev.dabrelity.atmospherica.config.ServerConfig;
 import dev.dabrelity.atmospherica.event.GameBusClientEvents;
 import dev.dabrelity.atmospherica.particle.ParticleCube;
 import dev.dabrelity.atmospherica.sound.ModSounds;
+import dev.dabrelity.atmospherica.util.Util;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -81,7 +82,7 @@ public class WeatherHandlerClient extends WeatherHandler {
       this.lightnings.add(lightning);
       Player player = Minecraft.getInstance().player;
       if (player != null) {
-         double dist = player.position().multiply(1.0, 0.0, 1.0).distanceTo(pos.multiply(1.0, 0.0, 1.0));
+         double dist = Util.distance2D(player.position(), pos);
          if (dist > 256.0) {
             this.getWorld()
                .playLocalSound(

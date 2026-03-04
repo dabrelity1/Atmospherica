@@ -106,6 +106,14 @@ public class Util {
       }
    }
 
+   // Optimization: Calculate 2D distance (X, Z only) without creating new Vec3 objects
+   // This avoids GC overhead caused by chaining .multiply(1.0, 0.0, 1.0).distanceTo(...)
+   public static double distance2D(Vec3 a, Vec3 b) {
+      double dx = a.x - b.x;
+      double dz = a.z - b.z;
+      return Math.sqrt(dx * dx + dz * dz);
+   }
+
    public static boolean isInteger(String string) {
       try {
          Integer.parseInt(string);
