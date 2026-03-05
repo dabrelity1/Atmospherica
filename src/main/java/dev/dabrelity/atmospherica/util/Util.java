@@ -90,6 +90,10 @@ public class Util {
       return new Vec2(a.x * b, a.y * b);
    }
 
+   public static double distance2D(Vec3 a, Vec3 b) {
+      return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.z - b.z) * (a.z - b.z));
+   }
+
    public static Vec2 nearestPoint(Vec2 v, Vec2 w, Vec2 p) {
       float l2 = v.distanceToSqr(w);
       float t = Mth.clamp(p.add(v.negated()).dot(w.add(v.negated())) / l2, 0.0F, 1.0F);
