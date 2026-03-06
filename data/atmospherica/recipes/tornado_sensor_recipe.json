@@ -3,22 +3,25 @@
   "category": "misc",
   "pattern": [
     "ICI",
-    "ITI",
-    "III"
+    "RRR",
+    "GGG"
   ],
   "key": {
     "I": {
       "item": "minecraft:iron_ingot"
     },
-    "T": {
-      "item": "atmospherica:tornado_sensor"
+    "R": {
+      "item": "minecraft:redstone"
     },
     "C": {
       "item": "minecraft:copper_ingot"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
     }
   },
   "result": {
     "count": 1,
-    "id": "atmospherica:radar"
+    "item": "atmospherica:tornado_sensor"
   }
 }

@@ -2,19 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "IJI",
-    "ITI",
-    "DID"
+    "CDC",
+    "CTC",
+    "DDD"
   ],
   "key": {
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
     "T": {
       "item": "atmospherica:tornado_sensor"
     },
-    "J": {
-      "item": "minecraft:jukebox"
+    "C": {
+      "item": "minecraft:copper_ingot"
     },
     "D": {
       "item": "minecraft:diamond"
@@ -22,6 +19,6 @@
   },
   "result": {
     "count": 1,
-    "id": "atmospherica:tornado_siren"
+    "item": "atmospherica:range_upgrade_module"
   }
 }
