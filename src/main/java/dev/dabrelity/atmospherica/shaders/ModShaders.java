@@ -324,10 +324,8 @@ public class ModShaders {
                     Storm storm = storms.get(i);
                     if (
                         storm.lastPosition == null ||
-                        storm.position
-                            .multiply(1.0, 0.0, 1.0)
-                            .distanceTo(
-                                camera.getPosition().multiply(1.0, 0.0, 1.0)
+                        dev.dabrelity.atmospherica.util.Util.distance2D(
+                                storm.position, camera.getPosition()
                             ) >
                         32000.0 ||
                         (storm.stage <= 0 &&
