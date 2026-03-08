@@ -198,7 +198,7 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                            for (Vorticy vorticy : storm.vorticies) {
                               Vec3 vPos = vorticy.getPosition();
                               float width = vorticy.getWidth() * 0.35F;
-                              double d = wPos.multiply(1.0, 0.0, 1.0).distanceTo(vPos.multiply(1.0, 0.0, 1.0));
+                              double d = dev.dabrelity.atmospherica.util.Util.distance2D(wPos, vPos);
                               if (d < width) {
                                  double angle = Math.pow(1.0 - Mth.clamp(d / width, 0.0, 1.0), 3.75);
                                  angle *= (float) (Math.PI / 10);
@@ -207,7 +207,7 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                               }
                            }
 
-                           double rawDist = wPos.multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+                           double rawDist = Util.distance2D(wPos, storm.position);
                            rawDist *= 1.0 + shapeNoise3 * 0.2F;
                            float intensity = (float)Math.pow(Mth.clamp(storm.windspeed / 65.0F, 0.0F, 1.0F), 0.25);
                            Vec3 relPos = cPos.subtract(wPos).multiply(scale, 0.0, scale);
@@ -270,7 +270,7 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                         }
 
                         if (storm.stormType == 1) {
-                           double rawDist = worldPos.multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+                           double rawDist = Util.distance2D(worldPos, storm.position);
                            Vec2 v2fWorldPos = new Vec2((float)worldPos.x, (float)worldPos.z);
                            Vec2 stormVel = new Vec2((float)storm.velocity.x, (float)storm.velocity.z);
                            Vec2 v2fStormPos = new Vec2((float)storm.position.x, (float)storm.position.z);
@@ -329,7 +329,7 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                         }
 
                         if (storm.stormType == 0) {
-                           double dist = worldPos.multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+                           double dist = Util.distance2D(worldPos, storm.position);
                            if (dist > stormSize * 4.0) {
                               continue;
                            }
