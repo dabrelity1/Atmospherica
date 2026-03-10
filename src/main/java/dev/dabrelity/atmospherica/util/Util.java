@@ -166,6 +166,18 @@ public class Util {
       return MixingRatio(SaturationVaporPressure(t), tp, null);
    }
 
+   public static double distance2D(Vec3 a, Vec3 b) {
+      double dx = a.x - b.x;
+      double dz = a.z - b.z;
+      return Math.sqrt(dx * dx + dz * dz);
+   }
+
+   public static double distance2D(Vec3 a, double bx, double bz) {
+      double dx = a.x - bx;
+      double dz = a.z - bz;
+      return Math.sqrt(dx * dx + dz * dz);
+   }
+
    public static Vec3 rotatePoint(Vec3 point, Vec3 origin, double angle) {
       point = point.subtract(origin);
       double x = point.x * Math.cos(angle) - point.z * Math.sin(angle);

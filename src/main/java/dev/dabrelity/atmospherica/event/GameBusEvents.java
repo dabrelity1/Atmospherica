@@ -245,7 +245,7 @@ public class GameBusEvents {
 
                if (pos != null) {
                   for (Storm stormx : weatherHandler.getStorms()) {
-                     double dist = pos.distanceTo(stormx.position);
+                     double dist = dev.dabrelity.atmospherica.util.Util.distance2D(pos, stormx.position);
                      if (stormx.stormType == 2 && dist < stormx.maxWidth / 1.5F) {
                         pos = null;
                         break;

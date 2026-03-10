@@ -44,7 +44,7 @@ public class WeatherHandlerClient extends WeatherHandler {
 
          for (Storm storm : this.getStorms()) {
             if (!storm.visualOnly) {
-               double dist = player.position().distanceTo(new Vec3(storm.position.x + 2000.0, player.position().y, storm.position.z - 900.0));
+               double dist = dev.dabrelity.atmospherica.util.Util.distance2D(player.position(), storm.position.x + 2000.0, storm.position.z - 900.0);
                if (!(dist > ServerConfig.stormSize * 4.0)) {
                   double perc = 0.0;
                   if (storm.stormType == 0) {
@@ -81,7 +81,7 @@ public class WeatherHandlerClient extends WeatherHandler {
       this.lightnings.add(lightning);
       Player player = Minecraft.getInstance().player;
       if (player != null) {
-         double dist = player.position().multiply(1.0, 0.0, 1.0).distanceTo(pos.multiply(1.0, 0.0, 1.0));
+         double dist = dev.dabrelity.atmospherica.util.Util.distance2D(player.position(), pos);
          if (dist > 256.0) {
             this.getWorld()
                .playLocalSound(
