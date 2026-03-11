@@ -800,7 +800,7 @@ public class Storm {
 
    public float getWind(Vec3 pos) {
       int windfieldWidth = Math.max((int)this.width, 40);
-      double dist = this.position.multiply(1.0, 0.0, 1.0).distanceTo(pos.multiply(1.0, 0.0, 1.0));
+      double dist = dev.dabrelity.atmospherica.util.Util.distance2D(this.position, pos);
       float perc = this.getRankine(dist, windfieldWidth);
       float affectPerc = (float)Math.sqrt(1.0 - dist / (windfieldWidth * 2.0F));
       Vec3 relativePos = pos.subtract(this.position);
@@ -812,7 +812,7 @@ public class Storm {
       motion = motion.add(this.velocity.multiply(15.0F * affectPerc, 0.0, 15.0F * affectPerc));
 
       for (Vorticy vorticy : this.vorticies) {
-         double d = vorticy.getPosition().multiply(1.0, 0.0, 1.0).distanceTo(pos.multiply(1.0, 0.0, 1.0));
+         double d = dev.dabrelity.atmospherica.util.Util.distance2D(vorticy.getPosition(), pos);
          Vec3 rPos = pos.subtract(vorticy.getPosition());
          Vec3 rot = new Vec3(rPos.z, 0.0, -rPos.x).normalize();
          int windWid = (int)(windfieldWidth * vorticy.widthPerc);

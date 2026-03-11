@@ -199,4 +199,10 @@ public class Util {
 
       ROCP = 0.28571427F;
    }
+
+   public static double distance2D(Vec3 a, Vec3 b) {
+      double dx = a.x - b.x;
+      double dz = a.z - b.z;
+      return Math.sqrt(dx * dx + dz * dz);
+   }
 }
