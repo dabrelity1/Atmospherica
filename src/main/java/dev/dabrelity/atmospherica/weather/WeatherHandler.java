@@ -79,7 +79,7 @@ public abstract class WeatherHandler implements IWorldData {
 
       for (Storm storm : this.getStorms()) {
          if (!storm.visualOnly) {
-            double dist = pos.distanceTo(new Vec3(storm.position.x, pos.y, storm.position.z));
+            double dist = dev.dabrelity.atmospherica.util.Util.distance2D(pos, storm.position);
             double perc = 0.0;
             float smoothStage = storm.stage + storm.energy / 100.0F;
             if (storm.stage == 3) {
@@ -192,7 +192,7 @@ public abstract class WeatherHandler implements IWorldData {
             }
 
             if (storm.stormType == 0) {
-               double coreDist = pos.distanceTo(new Vec3(storm.position.x + 2000.0, pos.y, storm.position.z - 900.0));
+               double coreDist = dev.dabrelity.atmospherica.util.Util.distance2D(pos, new Vec3(storm.position.x + 2000.0, pos.y, storm.position.z - 900.0));
                if (Math.min(dist, coreDist) > ServerConfig.stormSize * 6.0) {
                   continue;
                }
