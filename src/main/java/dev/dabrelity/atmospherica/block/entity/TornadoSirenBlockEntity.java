@@ -24,7 +24,7 @@ public class TornadoSirenBlockEntity extends BlockEntity {
 
          for (Storm storm : GameBusClientEvents.weatherHandler.getStorms()) {
             if (level == storm.level) {
-               double dist = blockPos.getCenter().multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+               double dist = dev.dabrelity.atmospherica.util.Util.distance2D(blockPos.getCenter(), storm.position);
                if (dist < ServerConfig.stormSize * 1.15F && storm.stage >= 3 && storm.stormType == 0) {
                   nearTornado = true;
                   break;
