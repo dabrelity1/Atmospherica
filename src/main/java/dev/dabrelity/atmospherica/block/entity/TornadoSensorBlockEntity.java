@@ -4,6 +4,7 @@ import dev.dabrelity.atmospherica.block.TornadoSensorBlock;
 import dev.dabrelity.atmospherica.config.ServerConfig;
 import dev.dabrelity.atmospherica.event.GameBusEvents;
 import dev.dabrelity.atmospherica.weather.Storm;
+import dev.dabrelity.atmospherica.util.Util;
 import dev.dabrelity.atmospherica.weather.WeatherHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -21,7 +22,7 @@ public class TornadoSensorBlockEntity extends BlockEntity {
          boolean nearTornado = false;
 
          for (Storm storm : ((WeatherHandler)GameBusEvents.MANAGERS.get(level.dimension())).getStorms()) {
-            double dist = blockPos.getCenter().multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+            double dist = Util.distance2D(blockPos.getCenter(), storm.position);
             if (dist < ServerConfig.stormSize * 2.0 && storm.stage >= 3 && storm.stormType == 0) {
                nearTornado = true;
                break;
