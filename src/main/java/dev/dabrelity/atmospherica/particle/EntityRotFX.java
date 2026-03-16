@@ -231,12 +231,8 @@ public class EntityRotFX extends TextureSheetParticle {
       float f2 = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3d.z());
       Quaternionf quaternion;
       if (this.facePlayer || this.rotationPitch == 0.0F && this.rotationYaw == 0.0F) {
-         try {
-            quaternion = (Quaternionf)renderInfo.rotation().clone();
-            quaternion.mul(Axis.ZP.rotationDegrees(this.rotationRoll));
-         } catch (CloneNotSupportedException var16) {
-            quaternion = renderInfo.rotation();
-         }
+         quaternion = new Quaternionf(renderInfo.rotation());
+         quaternion.mul(Axis.ZP.rotationDegrees(this.rotationRoll));
       } else {
          quaternion = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
          if (this.facePlayerYaw) {
@@ -248,17 +244,54 @@ public class EntityRotFX extends TextureSheetParticle {
          quaternion.mul(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, this.prevRotationPitch, this.rotationPitch)));
       }
 
-      Vector3f[] v3f = new Vector3f[]{
-         new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
-      };
       float scale = this.getQuadSize(partialTicks);
 
-      for (int i = 0; i < 4; i++) {
-         Vector3f vector3f = v3f[i];
-         vector3f.rotate(quaternion);
-         vector3f.mul(scale);
-         vector3f.add(f, f1, f2);
-      }
+      // Calculate rotated axes directly to avoid Vector3f allocations
+      float qx = quaternion.x();
+      float qy = quaternion.y();
+      float qz = quaternion.z();
+      float qw = quaternion.w();
+
+      // Calculate X axis (rotated (1,0,0)) * scale
+      float xx = qx * qx;
+      float yy = qy * qy;
+      float zz = qz * qz;
+      float xy = qx * qy;
+      float xz = qx * qz;
+      float yz = qy * qz;
+      float wx = qw * qx;
+      float wy = qw * qy;
+      float wz = qw * qz;
+
+      float axisXx = (1.0F - 2.0F * (yy + zz)) * scale;
+      float axisXy = (2.0F * (xy + wz)) * scale;
+      float axisXz = (2.0F * (xz - wy)) * scale;
+
+      // Calculate Y axis (rotated (0,1,0)) * scale
+      float axisYx = (2.0F * (xy - wz)) * scale;
+      float axisYy = (1.0F - 2.0F * (xx + zz)) * scale;
+      float axisYz = (2.0F * (yz + wx)) * scale;
+
+      // Unroll loop logic:
+      // v0: (-1, -1) -> -X - Y + pos
+      float v0x = f - axisXx - axisYx;
+      float v0y = f1 - axisXy - axisYy;
+      float v0z = f2 - axisXz - axisYz;
+
+      // v1: (-1, 1) -> -X + Y + pos
+      float v1x = f - axisXx + axisYx;
+      float v1y = f1 - axisXy + axisYy;
+      float v1z = f2 - axisXz + axisYz;
+
+      // v2: (1, 1) -> X + Y + pos
+      float v2x = f + axisXx + axisYx;
+      float v2y = f1 + axisXy + axisYy;
+      float v2z = f2 + axisXz + axisYz;
+
+      // v3: (1, -1) -> X - Y + pos
+      float v3x = f + axisXx - axisYx;
+      float v3y = f1 + axisXy - axisYy;
+      float v3z = f2 + axisXz - axisYz;
 
       float u0 = this.getU0();
       float u1 = this.getU1();
@@ -271,10 +304,10 @@ public class EntityRotFX extends TextureSheetParticle {
          j = this.lastNonZeroBrightness;
       }
 
-      buffer.vertex(v3f[0].x, v3f[0].y, v3f[0].z).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[1].x, v3f[1].y, v3f[1].z).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[2].x, v3f[2].y, v3f[2].z).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[3].x, v3f[3].y, v3f[3].z).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(v0x, v0y, v0z).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(v1x, v1y, v1z).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(v2x, v2y, v2z).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(v3x, v3y, v3z).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
    }
 
    public void move(double x, double y, double z) {
