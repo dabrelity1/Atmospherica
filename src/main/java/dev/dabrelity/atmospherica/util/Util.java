@@ -96,6 +96,12 @@ public class Util {
       return v.add(mulVec2(w.add(v.negated()), t));
    }
 
+   public static double distance2D(Vec3 a, Vec3 b) {
+      double dx = a.x - b.x;
+      double dz = a.z - b.z;
+      return Math.sqrt(dx * dx + dz * dz);
+   }
+
    public static float minimumDistance(Vec2 v, Vec2 w, Vec2 p) {
       float l2 = v.distanceToSqr(w);
       if (l2 == 0.0F) {
