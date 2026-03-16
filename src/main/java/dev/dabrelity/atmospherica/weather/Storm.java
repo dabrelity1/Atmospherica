@@ -382,7 +382,7 @@ public class Storm {
                lPos = this.position.add(new Vec3(right.x, 0.0, right.y)).add(new Vec3(fwd.x, 0.0, fwd.y));
             }
 
-            int height = this.level.getHeightmapPos(Types.MOTION_BLOCKING, new BlockPos((int)lPos.x, (int)lPos.y, (int)lPos.z)).getY();
+            int height = this.level.getHeight(Types.MOTION_BLOCKING, (int)lPos.x, (int)lPos.z);
             ((WeatherHandlerServer)this.weatherHandler).syncLightningNew(new Vec3(lPos.x, height, lPos.z));
          }
       }
@@ -831,7 +831,7 @@ public class Storm {
    public void pull(Particle particle, float multiplier) {
       int windfieldWidth = Math.max((int)this.width, 40);
       BlockPos blockPos = new BlockPos((int)particle.getPos().x, (int)particle.getPos().y, (int)particle.getPos().z);
-      int worldHeight = this.level.getHeightmapPos(Types.MOTION_BLOCKING, blockPos).getY();
+      int worldHeight = this.level.getHeight(Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
       if (worldHeight <= blockPos.getY()) {
          double dist = dev.dabrelity.atmospherica.util.Util.distance2D(particle.getPos(), this.position);
          if (!(dist > windfieldWidth)) {
