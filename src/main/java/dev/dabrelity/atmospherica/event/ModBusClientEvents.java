@@ -13,7 +13,6 @@ import dev.dabrelity.atmospherica.render.SoundingViewerRenderer;
 import dev.dabrelity.atmospherica.render.WeatherBalloonModel;
 import dev.dabrelity.atmospherica.render.WeatherPlatformRenderer;
 import dev.dabrelity.atmospherica.shaders.ModShaders;
-import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.resources.ResourceLocation;
@@ -52,7 +51,6 @@ public class ModBusClientEvents {
 
    @SubscribeEvent
    public static void onClientSetup(FMLClientSetupEvent event) {
-      EntityRenderers.register(ModEntities.MOVING_BLOCK.get(), MovingBlockRenderer::new);
       registerItemProp(
          event,
          (Item)ModItems.CONNECTOR.get(),
@@ -73,6 +71,7 @@ public class ModBusClientEvents {
 
    @SubscribeEvent
    public static void registerRenderers(RegisterRenderers event) {
+      event.registerEntityRenderer(ModEntities.MOVING_BLOCK.get(), MovingBlockRenderer::new);
       event.registerBlockEntityRenderer(ModBlockEntities.ANEMOMETER_BE.get(), AnemometerRenderer::new);
       event.registerBlockEntityRenderer(ModBlockEntities.RADAR_BE.get(), RadarRenderer::new);
       event.registerBlockEntityRenderer(ModBlockEntities.WEATHER_PLATFORM_BE.get(), WeatherPlatformRenderer::new);
