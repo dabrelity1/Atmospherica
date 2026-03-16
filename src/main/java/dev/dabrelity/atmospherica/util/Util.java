@@ -106,6 +106,12 @@ public class Util {
       }
    }
 
+   public static double distance2D(Vec3 v1, Vec3 v2) {
+      double dx = v1.x - v2.x;
+      double dz = v1.z - v2.z;
+      return Math.sqrt(dx * dx + dz * dz);
+   }
+
    public static boolean isInteger(String string) {
       try {
          Integer.parseInt(string);
