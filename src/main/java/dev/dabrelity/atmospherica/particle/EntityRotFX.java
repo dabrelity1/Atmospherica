@@ -231,12 +231,8 @@ public class EntityRotFX extends TextureSheetParticle {
       float f2 = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3d.z());
       Quaternionf quaternion;
       if (this.facePlayer || this.rotationPitch == 0.0F && this.rotationYaw == 0.0F) {
-         try {
-            quaternion = (Quaternionf)renderInfo.rotation().clone();
-            quaternion.mul(Axis.ZP.rotationDegrees(this.rotationRoll));
-         } catch (CloneNotSupportedException var16) {
-            quaternion = renderInfo.rotation();
-         }
+         quaternion = new Quaternionf(renderInfo.rotation());
+         quaternion.mul(Axis.ZP.rotationDegrees(this.rotationRoll));
       } else {
          quaternion = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
          if (this.facePlayerYaw) {
