@@ -113,7 +113,7 @@ public class GameBusEvents {
                boolean isTooNear = false;
 
                for (ServerPlayer existing : validPlayers) {
-                  if (existing.distanceTo(player) <= 64.0F) {
+                  if (existing.distanceToSqr(player) <= 4096.0F) {
                      isTooNear = true;
                      break;
                   }
@@ -208,7 +208,7 @@ public class GameBusEvents {
                boolean isTooNear = false;
 
                for (ServerPlayer existingx : validPlayers) {
-                  if (existingx.distanceTo(player) <= ServerConfig.spawnRange / 2.0F) {
+                  if (existingx.distanceToSqr(player) <= (ServerConfig.spawnRange / 2.0F) * (ServerConfig.spawnRange / 2.0F)) {
                      isTooNear = true;
                      break;
                   }
@@ -245,8 +245,9 @@ public class GameBusEvents {
 
                if (pos != null) {
                   for (Storm stormx : weatherHandler.getStorms()) {
-                     double dist = pos.distanceTo(stormx.position);
-                     if (stormx.stormType == 2 && dist < stormx.maxWidth / 1.5F) {
+                     double distSqr = pos.distanceToSqr(stormx.position);
+                     double checkDist = stormx.maxWidth / 1.5F;
+                     if (stormx.stormType == 2 && distSqr < checkDist * checkDist) {
                         pos = null;
                         break;
                      }
