@@ -61,6 +61,25 @@ public class ParticleTexExtraRender extends ParticleTexFX {
          renderAmount = Math.min(1 + this.extraParticlesBaseAmount, Util.MAX_RAIN_DROPS);
       }
 
+      int i = this.getLightColor(partialTicks);
+      if (i > 0) {
+         this.lastNonZeroBrightness = i;
+      } else {
+         i = this.lastNonZeroBrightness;
+      }
+
+      Vector3f[] v3f = new Vector3f[]{
+         new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
+      };
+      float scale = this.getQuadSize(partialTicks);
+
+      for (int v = 0; v < 4; v++) {
+         Vector3f vector3f = v3f[v];
+         vector3f.rotate(quaternion);
+         vector3f.mul(scale);
+         vector3f.add(f, f1, f2);
+      }
+
       for (int ii = 0; ii < renderAmount; ii++) {
          double xx = 0.0;
          double zz = 0.0;
@@ -76,25 +95,6 @@ public class ParticleTexExtraRender extends ParticleTexFX {
             if (this.y + yy < height2) {
                continue;
             }
-         }
-
-         int i = this.getLightColor(partialTicks);
-         if (i > 0) {
-            this.lastNonZeroBrightness = i;
-         } else {
-            i = this.lastNonZeroBrightness;
-         }
-
-         Vector3f[] v3f = new Vector3f[]{
-            new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
-         };
-         float scale = this.getQuadSize(partialTicks);
-
-         for (int v = 0; v < 4; v++) {
-            Vector3f vector3f = v3f[v];
-            vector3f.rotate(quaternion);
-            vector3f.mul(scale);
-            vector3f.add(f, f1, f2);
          }
 
          buffer.vertex((float)(xx + v3f[0].x), (float)(yy + v3f[0].y), (float)(zz + v3f[0].z))
