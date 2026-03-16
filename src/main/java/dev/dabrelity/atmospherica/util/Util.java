@@ -174,8 +174,10 @@ public class Util {
 
    public static Vec3 rotatePoint(Vec3 point, Vec3 origin, double angle) {
       point = point.subtract(origin);
-      double x = point.x * Math.cos(angle) - point.z * Math.sin(angle);
-      double z = point.z * Math.cos(angle) + point.x * Math.sin(angle);
+      double cos = Math.cos(angle);
+      double sin = Math.sin(angle);
+      double x = point.x * cos - point.z * sin;
+      double z = point.z * cos + point.x * sin;
       return new Vec3(x + origin.x, point.y, z + origin.z);
    }
 
