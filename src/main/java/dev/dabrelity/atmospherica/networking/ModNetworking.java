@@ -27,7 +27,7 @@ public class ModNetworking {
       CHANNEL.registerMessage(packetId++, PacketNBTFromClient.class, PacketNBTFromClient::encode, PacketNBTFromClient::decode, PacketNBTFromClient::handle);
    }
 
-   public static void clientSendToSever(CompoundTag data) {
+   public static void clientSendToServer(CompoundTag data) {
       CHANNEL.sendToServer(new PacketNBTFromClient(data));
    }
 
