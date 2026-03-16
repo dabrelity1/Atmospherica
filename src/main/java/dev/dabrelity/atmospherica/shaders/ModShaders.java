@@ -13,6 +13,7 @@ import dev.dabrelity.atmospherica.event.GameBusClientEvents;
 import dev.dabrelity.atmospherica.mixin.PostChainMixin;
 import dev.dabrelity.atmospherica.weather.Lightning;
 import dev.dabrelity.atmospherica.weather.Storm;
+import dev.dabrelity.atmospherica.util.Util;
 import dev.dabrelity.atmospherica.weather.ThermodynamicEngine;
 import dev.dabrelity.atmospherica.weather.WeatherHandler;
 import dev.dabrelity.atmospherica.weather.WeatherHandlerClient;
@@ -324,11 +325,8 @@ public class ModShaders {
                     Storm storm = storms.get(i);
                     if (
                         storm.lastPosition == null ||
-                        storm.position
-                            .multiply(1.0, 0.0, 1.0)
-                            .distanceTo(
-                                camera.getPosition().multiply(1.0, 0.0, 1.0)
-                            ) >
+                        Util.distance2D(storm.position, camera.getPosition())
+                        >
                         32000.0 ||
                         (storm.stage <= 0 &&
                             storm.energy <= 0 &&

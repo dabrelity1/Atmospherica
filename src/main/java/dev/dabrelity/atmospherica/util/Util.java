@@ -82,6 +82,12 @@ public class Util {
          || nzRay.getType() == Type.MISS;
    }
 
+   public static double distance2D(Vec3 v1, Vec3 v2) {
+      double dx = v1.x - v2.x;
+      double dz = v1.z - v2.z;
+      return Math.sqrt(dx * dx + dz * dz);
+   }
+
    public static Vec2 mulVec2(Vec2 a, Vec2 b) {
       return new Vec2(a.x * b.x, a.y * b.y);
    }

@@ -5,6 +5,7 @@ import dev.dabrelity.atmospherica.config.ServerConfig;
 import dev.dabrelity.atmospherica.event.GameBusClientEvents;
 import dev.dabrelity.atmospherica.sound.ModSounds;
 import dev.dabrelity.atmospherica.weather.Storm;
+import dev.dabrelity.atmospherica.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,7 +25,7 @@ public class TornadoSirenBlockEntity extends BlockEntity {
 
          for (Storm storm : GameBusClientEvents.weatherHandler.getStorms()) {
             if (level == storm.level) {
-               double dist = blockPos.getCenter().multiply(1.0, 0.0, 1.0).distanceTo(storm.position.multiply(1.0, 0.0, 1.0));
+               double dist = Util.distance2D(blockPos.getCenter(), storm.position);
                if (dist < ServerConfig.stormSize * 1.15F && storm.stage >= 3 && storm.stormType == 0) {
                   nearTornado = true;
                   break;
