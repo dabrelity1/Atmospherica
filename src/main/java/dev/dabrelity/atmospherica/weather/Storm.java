@@ -230,7 +230,8 @@ public class Storm {
                      (Atmospherica.RANDOM.nextFloat() - 0.5F) * ServerConfig.aimAtPlayerOffset
                   )
                );
-            if (this.position.distanceTo(aimPos) >= ServerConfig.aimAtPlayerOffset) {
+            // Bolt Performance Optimization: Use distanceToSqr to bypass Math.sqrt()
+            if (this.position.distanceToSqr(aimPos) >= ServerConfig.aimAtPlayerOffset * ServerConfig.aimAtPlayerOffset) {
                Vec3 toward = this.position.subtract(new Vec3(aimPos.x, this.position.y, aimPos.z)).multiply(1.0, 0.0, 1.0).normalize();
                double speed = Atmospherica.RANDOM.nextDouble() * 5.0 + 1.0;
                this.velocity = toward.multiply(-speed, 0.0, -speed);
@@ -766,9 +767,10 @@ public class Storm {
                   movingBlock.setPos(blockPosTop.getX(), blockPosTop.getY(), blockPosTop.getZ());
                   this.level.removeBlock(blockPosTop, false);
                   Player nearest = this.level.getNearestPlayer(blockPosTop.getX(), blockPosTop.getY(), blockPosTop.getZ(), 128.0, false);
+                  // Bolt Performance Optimization: distanceToSqr bypassing Math.sqrt() (128^2 = 16384)
                   if (Atmospherica.RANDOM.nextInt(Math.max(1, windfieldWidth / 10)) != 0
                      || nearest == null
-                     || !(nearest.position().distanceTo(blockPosTop.getCenter()) < 128.0)) {
+                     || !(nearest.position().distanceToSqr(blockPosTop.getCenter()) < 16384.0)) {
                      movingBlock.discard();
                      ((WeatherHandlerServer)this.weatherHandler).syncBlockParticleNew(blockPosTop, state, this);
                   } else if (this.level.isLoaded(blockPosTop)) {
