@@ -112,8 +112,9 @@ public class GameBusEvents {
             for (ServerPlayer player : plrs) {
                boolean isTooNear = false;
 
+               // Bolt Performance Optimization: Use distanceToSqr to bypass Math.sqrt()
                for (ServerPlayer existing : validPlayers) {
-                  if (existing.distanceTo(player) <= 64.0F) {
+                  if (existing.distanceToSqr(player) <= 4096.0F) {
                      isTooNear = true;
                      break;
                   }
@@ -207,8 +208,10 @@ public class GameBusEvents {
             for (ServerPlayer player : plrs) {
                boolean isTooNear = false;
 
+               // Bolt Performance Optimization: Use distanceToSqr to bypass Math.sqrt()
                for (ServerPlayer existingx : validPlayers) {
-                  if (existingx.distanceTo(player) <= ServerConfig.spawnRange / 2.0F) {
+                  float minDist = ServerConfig.spawnRange / 2.0F;
+                  if (existingx.distanceToSqr(player) <= minDist * minDist) {
                      isTooNear = true;
                      break;
                   }
@@ -244,9 +247,11 @@ public class GameBusEvents {
                }
 
                if (pos != null) {
+                  // Bolt Performance Optimization: Use distanceToSqr to bypass Math.sqrt()
                   for (Storm stormx : weatherHandler.getStorms()) {
-                     double dist = pos.distanceTo(stormx.position);
-                     if (stormx.stormType == 2 && dist < stormx.maxWidth / 1.5F) {
+                     double distSqr = pos.distanceToSqr(stormx.position);
+                     double minDist = stormx.maxWidth / 1.5F;
+                     if (stormx.stormType == 2 && distSqr < minDist * minDist) {
                         pos = null;
                         break;
                      }

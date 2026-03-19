@@ -146,10 +146,12 @@ public class MovingSoundStreamingSource extends AbstractTickableSoundInstance {
       }
 
       if (!this.lockToPlayer && player != null) {
-         double dist = this.realSource.distanceTo(player.position());
-         if (dist > this.cutOffRange) {
+         // Bolt Performance Optimization: Use distanceToSqr to exit early before costly Math.sqrt
+         double distSqr = this.realSource.distanceToSqr(player.position());
+         if (distSqr > this.cutOffRange * this.cutOffRange) {
             this.volume = 0.0F;
          } else {
+            double dist = Math.sqrt(distSqr);
             this.volume = (float)(1.0 - dist / this.cutOffRange) * this.extraVolumeAdjForDistScale;
          }
       }
