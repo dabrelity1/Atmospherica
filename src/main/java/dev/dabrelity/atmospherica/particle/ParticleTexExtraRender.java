@@ -18,6 +18,10 @@ public class ParticleTexExtraRender extends ParticleTexFX {
    public boolean noExtraParticles = false;
    public float extraRandomSecondaryYawRotation = 360.0F;
 
+   private final Vector3f[] vertices = new Vector3f[]{
+      new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()
+   };
+
    public ParticleTexExtraRender(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, TextureAtlasSprite sprite) {
       super(level, x, y, z, xSpeed, ySpeed, zSpeed, sprite);
    }
@@ -85,31 +89,33 @@ public class ParticleTexExtraRender extends ParticleTexFX {
             i = this.lastNonZeroBrightness;
          }
 
-         Vector3f[] v3f = new Vector3f[]{
-            new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
-         };
+         this.vertices[0].set(-1.0F, -1.0F, 0.0F);
+         this.vertices[1].set(-1.0F, 1.0F, 0.0F);
+         this.vertices[2].set(1.0F, 1.0F, 0.0F);
+         this.vertices[3].set(1.0F, -1.0F, 0.0F);
+
          float scale = this.getQuadSize(partialTicks);
 
          for (int v = 0; v < 4; v++) {
-            Vector3f vector3f = v3f[v];
+            Vector3f vector3f = this.vertices[v];
             vector3f.rotate(quaternion);
             vector3f.mul(scale);
             vector3f.add(f, f1, f2);
          }
 
-         buffer.vertex((float)(xx + v3f[0].x), (float)(yy + v3f[0].y), (float)(zz + v3f[0].z))
+         buffer.vertex((float)(xx + this.vertices[0].x), (float)(yy + this.vertices[0].y), (float)(zz + this.vertices[0].z))
             .uv(u1, v1)
             .color(this.rCol, this.gCol, this.bCol, this.alpha)
             .uv2(i).endVertex();
-         buffer.vertex((float)(xx + v3f[1].x), (float)(yy + v3f[1].y), (float)(zz + v3f[1].z))
+         buffer.vertex((float)(xx + this.vertices[1].x), (float)(yy + this.vertices[1].y), (float)(zz + this.vertices[1].z))
             .uv(u1, v0)
             .color(this.rCol, this.gCol, this.bCol, this.alpha)
             .uv2(i).endVertex();
-         buffer.vertex((float)(xx + v3f[2].x), (float)(yy + v3f[2].y), (float)(zz + v3f[2].z))
+         buffer.vertex((float)(xx + this.vertices[2].x), (float)(yy + this.vertices[2].y), (float)(zz + this.vertices[2].z))
             .uv(u0, v0)
             .color(this.rCol, this.gCol, this.bCol, this.alpha)
             .uv2(i).endVertex();
-         buffer.vertex((float)(xx + v3f[3].x), (float)(yy + v3f[3].y), (float)(zz + v3f[3].z))
+         buffer.vertex((float)(xx + this.vertices[3].x), (float)(yy + this.vertices[3].y), (float)(zz + this.vertices[3].z))
             .uv(u0, v1)
             .color(this.rCol, this.gCol, this.bCol, this.alpha)
             .uv2(i).endVertex();

@@ -118,6 +118,10 @@ public class EntityRotFX extends TextureSheetParticle {
    public boolean ignoreWind = false;
    public ParticleRenderType renderType = SORTED_TRANSLUCENT;
 
+   private final Vector3f[] vertices = new Vector3f[]{
+      new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()
+   };
+
    public EntityRotFX(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
       super(level, x, y, z, xSpeed, ySpeed, zSpeed);
       this.setSize(0.3F, 0.3F);
@@ -248,13 +252,15 @@ public class EntityRotFX extends TextureSheetParticle {
          quaternion.mul(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, this.prevRotationPitch, this.rotationPitch)));
       }
 
-      Vector3f[] v3f = new Vector3f[]{
-         new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
-      };
+      this.vertices[0].set(-1.0F, -1.0F, 0.0F);
+      this.vertices[1].set(-1.0F, 1.0F, 0.0F);
+      this.vertices[2].set(1.0F, 1.0F, 0.0F);
+      this.vertices[3].set(1.0F, -1.0F, 0.0F);
+
       float scale = this.getQuadSize(partialTicks);
 
       for (int i = 0; i < 4; i++) {
-         Vector3f vector3f = v3f[i];
+         Vector3f vector3f = this.vertices[i];
          vector3f.rotate(quaternion);
          vector3f.mul(scale);
          vector3f.add(f, f1, f2);
@@ -271,10 +277,10 @@ public class EntityRotFX extends TextureSheetParticle {
          j = this.lastNonZeroBrightness;
       }
 
-      buffer.vertex(v3f[0].x, v3f[0].y, v3f[0].z).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[1].x, v3f[1].y, v3f[1].z).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[2].x, v3f[2].y, v3f[2].z).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
-      buffer.vertex(v3f[3].x, v3f[3].y, v3f[3].z).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(this.vertices[0].x, this.vertices[0].y, this.vertices[0].z).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(this.vertices[1].x, this.vertices[1].y, this.vertices[1].z).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(this.vertices[2].x, this.vertices[2].y, this.vertices[2].z).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
+      buffer.vertex(this.vertices[3].x, this.vertices[3].y, this.vertices[3].z).uv(u0, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
    }
 
    public void move(double x, double y, double z) {
