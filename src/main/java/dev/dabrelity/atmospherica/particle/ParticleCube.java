@@ -24,6 +24,16 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class ParticleCube extends ParticleTexFX {
+
+   private final Vector3f[][] faces = new Vector3f[][]{
+      {new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+      {new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+      {new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+      {new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+      {new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()},
+      {new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()}
+   };
+
    public ParticleCube(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, BlockState state) {
       super(level, x, y, z, xSpeed, ySpeed, zSpeed, ParticleRegistry.rain);
       TextureAtlasSprite sprite1 = this.getSpriteFromState(state);
@@ -79,28 +89,16 @@ public class ParticleCube extends ParticleTexFX {
          quaternion = renderInfo.rotation();
       }
 
-      List<Vector3f[]> faces = new ArrayList();
-      Vector3f[] face = new Vector3f[]{
-         new Vector3f(-1.0F, -1.0F, -1.0F), new Vector3f(-1.0F, 1.0F, -1.0F), new Vector3f(1.0F, 1.0F, -1.0F), new Vector3f(1.0F, -1.0F, -1.0F)
-      };
-      faces.add(face);
-      face = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 1.0F), new Vector3f(-1.0F, 1.0F, 1.0F), new Vector3f(1.0F, 1.0F, 1.0F), new Vector3f(1.0F, -1.0F, 1.0F)};
-      faces.add(face);
-      face = new Vector3f[]{
-         new Vector3f(-1.0F, -1.0F, -1.0F), new Vector3f(-1.0F, 1.0F, -1.0F), new Vector3f(-1.0F, 1.0F, 1.0F), new Vector3f(-1.0F, -1.0F, 1.0F)
-      };
-      faces.add(face);
-      face = new Vector3f[]{new Vector3f(1.0F, -1.0F, -1.0F), new Vector3f(1.0F, 1.0F, -1.0F), new Vector3f(1.0F, 1.0F, 1.0F), new Vector3f(1.0F, -1.0F, 1.0F)};
-      faces.add(face);
-      face = new Vector3f[]{
-         new Vector3f(-1.0F, -1.0F, -1.0F), new Vector3f(-1.0F, -1.0F, 1.0F), new Vector3f(1.0F, -1.0F, 1.0F), new Vector3f(1.0F, -1.0F, -1.0F)
-      };
-      faces.add(face);
-      face = new Vector3f[]{new Vector3f(-1.0F, 1.0F, -1.0F), new Vector3f(-1.0F, 1.0F, 1.0F), new Vector3f(1.0F, 1.0F, 1.0F), new Vector3f(1.0F, 1.0F, -1.0F)};
-      faces.add(face);
+      this.faces[0][0].set(-1.0F, -1.0F, -1.0F); this.faces[0][1].set(-1.0F, 1.0F, -1.0F); this.faces[0][2].set(1.0F, 1.0F, -1.0F); this.faces[0][3].set(1.0F, -1.0F, -1.0F);
+      this.faces[1][0].set(-1.0F, -1.0F, 1.0F);  this.faces[1][1].set(-1.0F, 1.0F, 1.0F);  this.faces[1][2].set(1.0F, 1.0F, 1.0F);  this.faces[1][3].set(1.0F, -1.0F, 1.0F);
+      this.faces[2][0].set(-1.0F, -1.0F, -1.0F); this.faces[2][1].set(-1.0F, 1.0F, -1.0F); this.faces[2][2].set(-1.0F, 1.0F, 1.0F);  this.faces[2][3].set(-1.0F, -1.0F, 1.0F);
+      this.faces[3][0].set(1.0F, -1.0F, -1.0F);  this.faces[3][1].set(1.0F, 1.0F, -1.0F);  this.faces[3][2].set(1.0F, 1.0F, 1.0F);   this.faces[3][3].set(1.0F, -1.0F, 1.0F);
+      this.faces[4][0].set(-1.0F, -1.0F, -1.0F); this.faces[4][1].set(-1.0F, -1.0F, 1.0F); this.faces[4][2].set(1.0F, -1.0F, 1.0F);  this.faces[4][3].set(1.0F, -1.0F, -1.0F);
+      this.faces[5][0].set(-1.0F, 1.0F, -1.0F);  this.faces[5][1].set(-1.0F, 1.0F, 1.0F);  this.faces[5][2].set(1.0F, 1.0F, 1.0F);   this.faces[5][3].set(1.0F, 1.0F, -1.0F);
+
       float f4 = this.getQuadSize(partialTicks);
 
-      for (Vector3f[] entryFace : faces) {
+      for (Vector3f[] entryFace : this.faces) {
          for (int i = 0; i < 4; i++) {
             entryFace[i].rotate(quaternion);
             entryFace[i].mul(f4);
@@ -119,7 +117,7 @@ public class ParticleCube extends ParticleTexFX {
          j = this.lastNonZeroBrightness;
       }
 
-      for (Vector3f[] entryFace : faces) {
+      for (Vector3f[] entryFace : this.faces) {
          buffer.vertex(entryFace[0].x(), entryFace[0].y(), entryFace[0].z()).uv(u1, v1).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
          buffer.vertex(entryFace[1].x(), entryFace[1].y(), entryFace[1].z()).uv(u1, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
          buffer.vertex(entryFace[2].x(), entryFace[2].y(), entryFace[2].z()).uv(u0, v0).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(j).endVertex();
