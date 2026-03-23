@@ -320,16 +320,21 @@ public class ModShaders {
                 }
 
                 int count = 0;
+                // ⚡ Bolt: Hoist loop-invariant camera vector lookup and replace expensive distanceTo()
+                // with manual 2D primitive distance squared calculation to eliminate GC pressure and Math.sqrt overhead per storm per frame.
+                double camX = camera.getPosition().x;
+                double camZ = camera.getPosition().z;
                 for (int i = 0; i < storms.size() && i < 16; i++) {
                     Storm storm = storms.get(i);
+                    if (storm.lastPosition == null) {
+                        continue;
+                    }
+                    double dx = storm.position.x - camX;
+                    double dz = storm.position.z - camZ;
+
+                    // 1024000000.0 is 32000.0 squared
                     if (
-                        storm.lastPosition == null ||
-                        storm.position
-                            .multiply(1.0, 0.0, 1.0)
-                            .distanceTo(
-                                camera.getPosition().multiply(1.0, 0.0, 1.0)
-                            ) >
-                        32000.0 ||
+                        dx * dx + dz * dz > 1024000000.0 ||
                         (storm.stage <= 0 &&
                             storm.energy <= 0 &&
                             storm.stormType != 2)
