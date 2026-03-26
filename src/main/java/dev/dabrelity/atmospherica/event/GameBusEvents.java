@@ -113,7 +113,7 @@ public class GameBusEvents {
                boolean isTooNear = false;
 
                for (ServerPlayer existing : validPlayers) {
-                  if (existing.distanceTo(player) <= 64.0F) {
+                  if (existing.distanceToSqr(player) <= 4096.0) { // 64 * 64 = 4096
                      isTooNear = true;
                      break;
                   }
@@ -207,8 +207,9 @@ public class GameBusEvents {
             for (ServerPlayer player : plrs) {
                boolean isTooNear = false;
 
+               float spawnRangeSq = (ServerConfig.spawnRange / 2.0F) * (ServerConfig.spawnRange / 2.0F);
                for (ServerPlayer existingx : validPlayers) {
-                  if (existingx.distanceTo(player) <= ServerConfig.spawnRange / 2.0F) {
+                  if (existingx.distanceToSqr(player) <= spawnRangeSq) {
                      isTooNear = true;
                      break;
                   }
