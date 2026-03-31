@@ -20,11 +20,19 @@ public class TornadoSensorBlockEntity extends BlockEntity {
       if (level.getGameTime() % 20L == 0L && !level.isClientSide()) {
          boolean nearTornado = false;
 
+         double centerX = blockPos.getX() + 0.5D;
+         double centerZ = blockPos.getZ() + 0.5D;
+         double range = ServerConfig.stormSize * 2.0;
+         double rangeSq = range * range;
+
          for (Storm storm : ((WeatherHandler)GameBusEvents.MANAGERS.get(level.dimension())).getStorms()) {
-            double dist = dev.dabrelity.atmospherica.util.Util.distance2D(blockPos.getCenter(), storm.position);
-            if (dist < ServerConfig.stormSize * 2.0 && storm.stage >= 3 && storm.stormType == 0) {
-               nearTornado = true;
-               break;
+            if (storm.stage >= 3 && storm.stormType == 0) {
+               double dx = centerX - storm.position.x;
+               double dz = centerZ - storm.position.z;
+               if ((dx * dx + dz * dz) < rangeSq) {
+                  nearTornado = true;
+                  break;
+               }
             }
          }
 
