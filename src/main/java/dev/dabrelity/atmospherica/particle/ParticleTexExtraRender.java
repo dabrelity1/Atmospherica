@@ -72,7 +72,8 @@ public class ParticleTexExtraRender extends ParticleTexFX {
          }
 
          if (this.dontRenderUnderTopmostBlock) {
-            int height2 = this.level.getHeightmapPos(Types.MOTION_BLOCKING, new BlockPos((int)(this.x + xx), (int)this.y, (int)(this.z + zz))).getY();
+            // Optimized: Use getHeight instead of getHeightmapPos to eliminate temporary BlockPos allocation during particle rendering
+            int height2 = this.level.getHeight(Types.MOTION_BLOCKING, (int)(this.x + xx), (int)(this.z + zz));
             if (this.y + yy < height2) {
                continue;
             }
