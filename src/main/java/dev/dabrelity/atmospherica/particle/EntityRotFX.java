@@ -154,7 +154,8 @@ public class EntityRotFX extends TextureSheetParticle {
 
          BlockPos pos = new BlockPos((int)this.x, (int)this.y, (int)this.z);
          if (this.killWhenUnderTopmostBlock) {
-            int height = this.level.getHeightmapPos(Types.MOTION_BLOCKING, pos).getY();
+            // Optimized: Use getHeight instead of getHeightmapPos to eliminate temporary BlockPos allocation per tick
+            int height = this.level.getHeight(Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
             if (this.y - this.killWhenUnderTopmostBlock_ScanAheadRange <= height) {
                this.startDeath();
             }
