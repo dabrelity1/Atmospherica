@@ -22,10 +22,16 @@ public class TornadoSirenBlockEntity extends BlockEntity {
       if (level.getGameTime() % 20L == 0L && level.isClientSide() && System.currentTimeMillis() > this.lastSirenSound) {
          boolean nearTornado = false;
 
+         double cx = blockPos.getX() + 0.5;
+         double cz = blockPos.getZ() + 0.5;
+         double range = ServerConfig.stormSize * 1.15;
+         double rangeSq = range * range;
+
          for (Storm storm : GameBusClientEvents.weatherHandler.getStorms()) {
-            if (level == storm.level) {
-               double dist = dev.dabrelity.atmospherica.util.Util.distance2D(blockPos.getCenter(), storm.position);
-               if (dist < ServerConfig.stormSize * 1.15F && storm.stage >= 3 && storm.stormType == 0) {
+            if (level == storm.level && storm.stage >= 3 && storm.stormType == 0) {
+               double dx = cx - storm.position.x;
+               double dz = cz - storm.position.z;
+               if (dx * dx + dz * dz < rangeSq) {
                   nearTornado = true;
                   break;
                }
