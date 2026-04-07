@@ -4,9 +4,11 @@ import dev.dabrelity.atmospherica.Atmospherica;
 import dev.dabrelity.atmospherica.util.Util;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -130,7 +132,8 @@ public class ServerConfig {
          },
          e -> e instanceof String string && Objects.nonNull(ResourceLocation.tryParse(string))
       );
-   public static List<Block> blacklistedBlocks;
+   // Optimized: Use HashSet instead of ArrayList for O(1) lookups during high-frequency weather events
+   public static Set<Block> blacklistedBlocks;
    private static final ConfigValue<List<? extends String>> BLACKLISTED_BLOCKTAGS = BUILDER.comment("List of blocktags not allowed to be damaged")
       .defineList("blacklistedblocktags", () -> {
          List<String> list = new ArrayList<>();
@@ -149,14 +152,16 @@ public class ServerConfig {
             return false;
          }
       });
-   public static List<TagKey<Block>> blacklistedBlockTags;
+   // Optimized: Use HashSet instead of ArrayList for O(1) lookups during high-frequency weather events
+   public static Set<TagKey<Block>> blacklistedBlockTags;
    private static final ConfigValue<List<? extends String>> VALID_DIMENSIONS = BUILDER.comment("List of valid dimensions for spawning weather")
       .defineList("validdimensions", () -> {
          List<String> list = new ArrayList<>();
          list.add("minecraft:overworld");
          return list;
       }, e -> e instanceof String);
-   public static List<ResourceKey<Level>> validDimensions;
+   // Optimized: Use HashSet instead of ArrayList for O(1) lookups during high-frequency rendering and ticking paths
+   public static Set<ResourceKey<Level>> validDimensions;
    private static final DoubleValue STORM_SIZE = BUILDER.comment("Size of storms").defineInRange("stormsize", 300.0, 128.0, 512.0);
    public static double stormSize;
    private static final DoubleValue OVERCAST_PERCENT = BUILDER.comment("Overcast Modifier").defineInRange("overcastpercent", 0.85, 0.0, 0.9F);
@@ -229,7 +234,7 @@ public class ServerConfig {
             }
          }
 
-         blacklistedBlocks = new ArrayList();
+         blacklistedBlocks = new HashSet<>();
 
          for (Object obj : BLACKLISTED_BLOCKS.get()) {
             String stringx = (String)obj;
@@ -243,7 +248,7 @@ public class ServerConfig {
             }
          }
 
-         blacklistedBlockTags = new ArrayList();
+         blacklistedBlockTags = new HashSet<>();
 
          for (Object obj : BLACKLISTED_BLOCKTAGS.get()) {
             String stringxx = (String)obj;
@@ -253,7 +258,7 @@ public class ServerConfig {
             blacklistedBlockTags.add(tagKey);
          }
 
-         validDimensions = new ArrayList();
+         validDimensions = new HashSet<>();
 
          for (Object obj : VALID_DIMENSIONS.get()) {
             String stringxx = (String)obj;
