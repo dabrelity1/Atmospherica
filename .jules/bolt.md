@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-10-24 - Proximity Check Optimization in Entities
+**Learning:** The previous learning highlighted the issue of proximity checks using 3D spherical distances (`distanceTo`) implicitly creating temporary `Vec3` objects. Even replacing `distanceTo` with `distance2D` invokes `Math.sqrt` and necessitates allocations if not carefully managed.
+**Action:** When refactoring proximity checks in entity or block entity loops (e.g., `TornadoSirenBlockEntity`, `TornadoSensorBlockEntity`), optimize 2D distance calculations by manually unwrapping coordinates and checking squared distance (`(dx*dx + dz*dz) < rangeSq`), moving scalar extraction outside the loop, avoiding `.getCenter()`, and putting condition checks (like `storm.stage >= 3`) before the math to early exit.
