@@ -104,7 +104,7 @@ public class GameBusEvents {
             Vec3 wind = WindEngine.getWind(movingBlock.getPosition(1.0F), serverLevel, false, true, false);
             movingBlock.addDeltaMovement(wind.multiply(0.05F, 0.0, 0.05F).multiply(0.01F, 0.0, 0.01F));
          }
-         if (Atmospherica.RANDOM.nextInt(2) == 0) {
+         if (!weatherHandler.getStorms().isEmpty() && Atmospherica.RANDOM.nextInt(2) == 0) {
             List<ServerPlayer> validPlayers = new ArrayList<>();
             List<ServerPlayer> plrs = new ArrayList<>(serverLevel.players());
             Collections.shuffle(plrs);
