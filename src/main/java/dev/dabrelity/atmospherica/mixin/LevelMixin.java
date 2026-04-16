@@ -92,7 +92,7 @@ public class LevelMixin {
          callbackInfoReturnable.setReturnValue(false);
       } else if (!level.canSeeSky(pos)) {
          callbackInfoReturnable.setReturnValue(false);
-      } else if (level.getHeightmapPos(Types.MOTION_BLOCKING, pos).getY() > pos.getY()) {
+      } else if (level.getHeight(Types.MOTION_BLOCKING, pos.getX(), pos.getZ()) > pos.getY()) {
          callbackInfoReturnable.setReturnValue(false);
       } else {
          callbackInfoReturnable.setReturnValue(true);

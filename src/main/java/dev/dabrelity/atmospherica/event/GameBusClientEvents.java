@@ -372,7 +372,7 @@ public class GameBusClientEvents {
    }
 
    public static boolean canPrecipitateAt(Level level, BlockPos pos) {
-      return pos.getY() > ServerConfig.layer0Height ? false : level.getHeightmapPos(Types.MOTION_BLOCKING, pos).getY() <= pos.getY();
+      return pos.getY() > ServerConfig.layer0Height ? false : level.getHeight(Types.MOTION_BLOCKING, pos.getX(), pos.getZ()) <= pos.getY();
    }
 
    public static void resetClientWeather() {

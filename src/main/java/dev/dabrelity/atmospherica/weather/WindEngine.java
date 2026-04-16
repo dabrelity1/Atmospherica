@@ -73,7 +73,7 @@ public class WindEngine {
          Atmospherica.LOGGER.warn("Level is null");
          return wind;
       } else {
-         int worldHeight = level.getHeightmapPos(Types.MOTION_BLOCKING, blockPos).getY();
+         int worldHeight = level.getHeight(Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
          if (windCheck && !windAnyway) {
             if (!Util.canWindAffect(position, level)) {
                return wind;

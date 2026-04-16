@@ -60,7 +60,7 @@ public class LevelRendererMixin {
                if (precip == ThermodynamicEngine.Precipitation.RAIN
                   || precip == ThermodynamicEngine.Precipitation.FREEZING_RAIN
                   || precip == ThermodynamicEngine.Precipitation.WINTRY_MIX) {
-                  if (blockPos1.getY() > blockPos.getY() + 1 && level.getHeightmapPos(Types.MOTION_BLOCKING, blockPos).getY() > Mth.floor(blockPos.getY())) {
+                  if (blockPos1.getY() > blockPos.getY() + 1 && level.getHeight(Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ()) > Mth.floor(blockPos.getY())) {
                      level.playLocalSound(
                         blockPos1, ModSounds.RAIN.get(), SoundSource.WEATHER, 0.15F * rain + 0.3F * rain, 1.0F / (rain + 1.0F), false
                      );
@@ -72,7 +72,7 @@ public class LevelRendererMixin {
                }
 
                if (precip == ThermodynamicEngine.Precipitation.SLEET || precip == ThermodynamicEngine.Precipitation.WINTRY_MIX) {
-                  if (blockPos1.getY() > blockPos.getY() + 1 && level.getHeightmapPos(Types.MOTION_BLOCKING, blockPos).getY() > Mth.floor(blockPos.getY())) {
+                  if (blockPos1.getY() > blockPos.getY() + 1 && level.getHeight(Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ()) > Mth.floor(blockPos.getY())) {
                      level.playLocalSound(
                         blockPos1, ModSounds.SLEET.get(), SoundSource.WEATHER, 0.3F * rain + 0.5F * rain, 1.0F / (rain + 1.0F), false
                      );
