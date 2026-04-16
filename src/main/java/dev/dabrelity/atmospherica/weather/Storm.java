@@ -831,7 +831,7 @@ public class Storm {
    public void pull(Particle particle, float multiplier) {
       int windfieldWidth = Math.max((int)this.width, 40);
       BlockPos blockPos = new BlockPos((int)particle.getPos().x, (int)particle.getPos().y, (int)particle.getPos().z);
-      int worldHeight = this.level.getHeightmapPos(Types.MOTION_BLOCKING, blockPos).getY();
+      int worldHeight = this.level.getHeight(Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
       if (worldHeight <= blockPos.getY()) {
          double dist = dev.dabrelity.atmospherica.util.Util.distance2D(particle.getPos(), this.position);
          if (!(dist > windfieldWidth)) {
