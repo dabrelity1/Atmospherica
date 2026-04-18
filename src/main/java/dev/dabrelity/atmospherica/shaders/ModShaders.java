@@ -320,16 +320,22 @@ public class ModShaders {
                 }
 
                 int count = 0;
+                // ⚡ Bolt: Hoist loop-invariant camera position
+                Vec3 loopCamPos = camera.getPosition();
                 for (int i = 0; i < storms.size() && i < 16; i++) {
                     Storm storm = storms.get(i);
+
+                    if (storm.lastPosition == null) {
+                        continue;
+                    }
+
+                    // ⚡ Bolt: Replace Vec3 allocation and Math.sqrt with inline primitive squared distance check
+                    double dx = storm.position.x - loopCamPos.x;
+                    double dz = storm.position.z - loopCamPos.z;
+
+                    // 1024000000.0 is 32000.0 squared
                     if (
-                        storm.lastPosition == null ||
-                        storm.position
-                            .multiply(1.0, 0.0, 1.0)
-                            .distanceTo(
-                                camera.getPosition().multiply(1.0, 0.0, 1.0)
-                            ) >
-                        32000.0 ||
+                        (dx * dx + dz * dz) > 1024000000.0 ||
                         (storm.stage <= 0 &&
                             storm.energy <= 0 &&
                             storm.stormType != 2)

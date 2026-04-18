@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-05-24 - ModShaders Render Loop Object Allocation Optimization
+**Learning:** In high-frequency rendering paths like `ModShaders.renderShaders` (which executes for up to 16 storms every frame), using `Vec3.multiply().distanceTo()` generates multiple unnecessary `Vec3` allocations and involves a costly `Math.sqrt` computation.
+**Action:** When performing 2D proximity checks in hot shader paths, hoist loop-invariant vector lookups (`camera.getPosition()`) and implement the checks using inline primitive 2D distance squared arithmetic (e.g. `(dx*dx + dz*dz) > rangeSq`) to completely eliminate vector allocations and square root calculations from the hot path. Be sure to document magic numbers (e.g. 1024000000.0 is 32000.0 squared).
