@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-10-24 - Implicit Semantic Changes with Primitive Re-writes
+**Learning:** When unrolling objects like `Vec3` to primitives in long mathematical expressions, be careful with replacing operations like `vector.add()`. In one instance, an unintended `.add` call in `rotationalx.add(scalar, scalar, scalar)` caused a logic bug in original code where the scalar got applied to the Y-axis. Fixing it arbitrarily during primitive extraction changed the semantic behavior.
+**Action:** When converting object-oriented math chains to primitives, reproduce the *exact* original mathematical logic first, even if it appears to be a bug, unless explicitly instructed or reviewed to fix the underlying logical flaw.
