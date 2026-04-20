@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2026-04-20 - Replaced expensive Math.pow with primitive operations
+**Learning:** Found multiple usages of `Math.pow()` with fractional constants (e.g. 0.5, 0.25, 0.75, 1.25, 1.5, 2.5) and small integer exponents in hot execution paths in `WindEngine.java` and `ThermodynamicEngine.java`. `Math.pow()` is a general-purpose, relatively slow transcendental function.
+**Action:** Replaced small integer exponents (e.g. `x^2`, `x^3`) with primitive multiplications (e.g., `x * x`, `x * x * x`). Replaced fractional exponents with combinations of `Math.sqrt()`: `x^0.5` -> `Math.sqrt(x)`, `x^0.25` -> `Math.sqrt(Math.sqrt(x))`, `x^0.75` -> `Math.sqrt(x) * Math.sqrt(Math.sqrt(x))`, `x^1.25` -> `x * Math.sqrt(Math.sqrt(x))`, `x^1.5` -> `x * Math.sqrt(x)`, `x^2.5` -> `x * x * Math.sqrt(x)` to improve raw throughput while preserving behavior exactly.

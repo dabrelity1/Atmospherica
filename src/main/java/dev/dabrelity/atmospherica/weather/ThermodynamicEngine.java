@@ -169,7 +169,7 @@ public class ThermodynamicEngine {
             if (biomeTemp <= 0.0F) {
                sst = Mth.lerp(-biomeTemp, 0.0F, -25.0F + sfcTNoise);
             } else {
-               sst = Mth.lerp((float)Math.pow(biomeTemp / 1.85, 0.5), 0.0F, 30.0F + sfcTNoise);
+               sst = Mth.lerp((float)Math.sqrt(biomeTemp / 1.85), 0.0F, 30.0F + sfcTNoise);
             }
 
             sst += humidity * 3.0F;
@@ -284,7 +284,7 @@ public class ThermodynamicEngine {
          if (biomeTemp <= 0.0F) {
             sfcTemp = Mth.lerp(-biomeTemp, 0.0F, -20.0F + sfcTNoise);
          } else {
-            sfcTemp = Mth.lerp((float)Math.pow(biomeTemp / 1.85, 0.5), 0.0F, 35.0F + sfcTNoise);
+            sfcTemp = Mth.lerp((float)Math.sqrt(biomeTemp / 1.85), 0.0F, 35.0F + sfcTNoise);
          }
 
          sfcTemp += humidity * 3.0F;
@@ -307,7 +307,9 @@ public class ThermodynamicEngine {
 
          for (Storm storm : weatherHandler.getStorms()) {
             if (storm.stormType == 1) {
-               double distance = Math.sqrt(Math.pow(posX - storm.position.x, 2) + Math.pow(posZ - storm.position.z, 2));
+               double dx = posX - storm.position.x;
+               double dz = posZ - storm.position.z;
+               double distance = Math.sqrt(dx * dx + dz * dz);
                Vec2 v2fWorldPos = new Vec2((float)posX, (float)posZ);
                Vec2 stormVel = new Vec2((float)storm.velocity.x, (float)storm.velocity.z);
                Vec2 v2fStormPos = new Vec2((float)storm.position.x, (float)storm.position.z);
@@ -315,8 +317,9 @@ public class ThermodynamicEngine {
                Vec2 fwd = stormVel.normalized();
                Vec2 le = Util.mulVec2(right, -((float)ServerConfig.stormSize) * 5.0F);
                Vec2 ri = Util.mulVec2(right, (float)ServerConfig.stormSize * 5.0F);
+               float clampDist = Mth.clamp((float)(distance / (ServerConfig.stormSize * 5.0F)), 0.0F, 1.0F);
                Vec2 off = Util.mulVec2(
-                  fwd, -((float)Math.pow(Mth.clamp(distance / ((float)ServerConfig.stormSize * 5.0F), 0.0, 1.0), 2.0)) * ((float)ServerConfig.stormSize * 1.5F)
+                  fwd, -(clampDist * clampDist) * ((float)ServerConfig.stormSize * 1.5F)
                );
                le = le.add(off);
                ri = ri.add(off);
@@ -347,7 +350,8 @@ public class ThermodynamicEngine {
                      p = 1.0F - (p - start) / (1.0F - start);
                   }
 
-                  stormCooling = Math.max(stormCooling, Mth.clamp(p, 0.0F, 1.0F) * 15.0F * (float)Math.pow((float)storm.coldEnergy / storm.maxColdEnergy, 0.75));
+                  float coldRatio = (float)storm.coldEnergy / storm.maxColdEnergy;
+                  stormCooling = Math.max(stormCooling, Mth.clamp(p, 0.0F, 1.0F) * 15.0F * (float)(Math.sqrt(coldRatio) * Math.sqrt(Math.sqrt(coldRatio))));
                }
             }
          }
@@ -356,9 +360,11 @@ public class ThermodynamicEngine {
          sfcTemp -= stormCooling * Mth.clamp(1.0F - altitude / 3000.0F, 0.0F, 1.0F);
          float var81;
          if (humidity > 0.5F) {
-            var81 = (float)Math.pow(2.0F * (humidity - 0.5F), 0.25) + 0.5F;
+            float humBase = 2.0F * (humidity - 0.5F);
+            var81 = (float)Math.sqrt(Math.sqrt(humBase)) + 0.5F;
          } else {
-            var81 = (float)Math.pow(2.0F * humidity, 4.0) * 0.5F;
+            float humBase2 = 2.0F * humidity;
+            var81 = (humBase2 * humBase2 * humBase2 * humBase2) * 0.5F;
          }
 
          float dewP = Mth.clamp(
@@ -377,7 +383,7 @@ public class ThermodynamicEngine {
          float lapseRate = 5.5F;
          float lrNoise = tNoise;
          if (tNoise > 0.0F) {
-            lrNoise = (float)Math.pow(tNoise, 1.25);
+            lrNoise = tNoise * (float)Math.sqrt(Math.sqrt(tNoise));
             lrNoise *= 2.0F;
          }
 
@@ -423,7 +429,8 @@ public class ThermodynamicEngine {
          float p = getPressureAtHeight(aboveSeaLevel, var83, elevationSeaLevel, sfcPressure);
          float dewMin = FBM(posX / xzScale, posY / yScale + time / -timeScale, posZ / xzScale, 4, 2.0F, 0.5F, 1.0F);
          dewMin = Mth.clamp(dewMin + 1.0F, 0.0F, 2.0F) * 2.0F;
-         dewMin += (float)Math.pow(posY / 16000.0, 2.0) * 40.0F * (1.0F - humidity);
+         float posYRatio = (float)(posY / 16000.0);
+         dewMin += (posYRatio * posYRatio) * 40.0F * (1.0F - humidity);
          float td = var83 - dewMin;
          if (dp > td) {
             float dif = dp - td;
