@@ -320,16 +320,18 @@ public class ModShaders {
                 }
 
                 int count = 0;
+                // ⚡ Bolt: Cache camera position outside the loop and use primitive squared distance
+                // calculation (XZ plane) to eliminate Vec3 allocations and Math.sqrt overhead.
+                // Replaces expensive `.multiply(1.0, 0.0, 1.0).distanceTo(...)` per storm.
+                Vec3 camPosForDist = camera.getPosition();
+                double maxDistSq = 32000.0 * 32000.0;
                 for (int i = 0; i < storms.size() && i < 16; i++) {
                     Storm storm = storms.get(i);
+                    double dx = storm.position.x - camPosForDist.x;
+                    double dz = storm.position.z - camPosForDist.z;
                     if (
                         storm.lastPosition == null ||
-                        storm.position
-                            .multiply(1.0, 0.0, 1.0)
-                            .distanceTo(
-                                camera.getPosition().multiply(1.0, 0.0, 1.0)
-                            ) >
-                        32000.0 ||
+                        (dx * dx + dz * dz) > maxDistSq ||
                         (storm.stage <= 0 &&
                             storm.energy <= 0 &&
                             storm.stormType != 2)
