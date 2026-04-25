@@ -169,7 +169,7 @@ public class ThermodynamicEngine {
             if (biomeTemp <= 0.0F) {
                sst = Mth.lerp(-biomeTemp, 0.0F, -25.0F + sfcTNoise);
             } else {
-               sst = Mth.lerp((float)Math.pow(biomeTemp / 1.85, 0.5), 0.0F, 30.0F + sfcTNoise);
+               sst = Mth.lerp((float)Math.sqrt(biomeTemp / 1.85), 0.0F, 30.0F + sfcTNoise);
             }
 
             sst += humidity * 3.0F;
@@ -284,7 +284,7 @@ public class ThermodynamicEngine {
          if (biomeTemp <= 0.0F) {
             sfcTemp = Mth.lerp(-biomeTemp, 0.0F, -20.0F + sfcTNoise);
          } else {
-            sfcTemp = Mth.lerp((float)Math.pow(biomeTemp / 1.85, 0.5), 0.0F, 35.0F + sfcTNoise);
+            sfcTemp = Mth.lerp((float)Math.sqrt(biomeTemp / 1.85), 0.0F, 35.0F + sfcTNoise);
          }
 
          sfcTemp += humidity * 3.0F;
@@ -315,8 +315,9 @@ public class ThermodynamicEngine {
                Vec2 fwd = stormVel.normalized();
                Vec2 le = Util.mulVec2(right, -((float)ServerConfig.stormSize) * 5.0F);
                Vec2 ri = Util.mulVec2(right, (float)ServerConfig.stormSize * 5.0F);
+               float distClamp = Mth.clamp((float)(distance / ((float)ServerConfig.stormSize * 5.0F)), 0.0F, 1.0F);
                Vec2 off = Util.mulVec2(
-                  fwd, -((float)Math.pow(Mth.clamp(distance / ((float)ServerConfig.stormSize * 5.0F), 0.0, 1.0), 2.0)) * ((float)ServerConfig.stormSize * 1.5F)
+                  fwd, -(distClamp * distClamp) * ((float)ServerConfig.stormSize * 1.5F)
                );
                le = le.add(off);
                ri = ri.add(off);
@@ -423,7 +424,8 @@ public class ThermodynamicEngine {
          float p = getPressureAtHeight(aboveSeaLevel, var83, elevationSeaLevel, sfcPressure);
          float dewMin = FBM(posX / xzScale, posY / yScale + time / -timeScale, posZ / xzScale, 4, 2.0F, 0.5F, 1.0F);
          dewMin = Mth.clamp(dewMin + 1.0F, 0.0F, 2.0F) * 2.0F;
-         dewMin += (float)Math.pow(posY / 16000.0, 2.0) * 40.0F * (1.0F - humidity);
+         float posRatio = (float)(posY / 16000.0);
+         dewMin += (posRatio * posRatio) * 40.0F * (1.0F - humidity);
          float td = var83 - dewMin;
          if (dp > td) {
             float dif = dp - td;
