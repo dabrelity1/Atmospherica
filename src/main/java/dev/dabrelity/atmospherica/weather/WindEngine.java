@@ -64,21 +64,25 @@ public class WindEngine {
       return getWind(position, level, ignoreStorms, ignoreTornadoes, windCheck, false);
    }
 
-   public static Vec3 getWind(Vec3 position, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck, boolean windAnyway) {
+      public static Vec3 getWind(Vec3 position, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck, boolean windAnyway) {
+      return getWind(position.x, position.y, position.z, level, ignoreStorms, ignoreTornadoes, windCheck, windAnyway);
+   }
+
+
+   public static Vec3 getWind(double posX, double posY, double posZ, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck, boolean windAnyway) {
       Vec3 wind = Vec3.ZERO;
       Vec3 rawWind = Vec3.ZERO;
-      BlockPos blockPos = new BlockPos((int)position.x, (int)position.y, (int)position.z);
-      List<Storm> tornadicStorms = new ArrayList();
+            List<Storm> tornadicStorms = new ArrayList();
       if (level == null) {
          Atmospherica.LOGGER.warn("Level is null");
          return wind;
       } else {
-         int worldHeight = level.getHeightmapPos(Types.MOTION_BLOCKING, blockPos).getY();
+         int worldHeight = level.getHeight(Types.MOTION_BLOCKING, (int)posX, (int)posZ);
          if (windCheck && !windAnyway) {
-            if (!Util.canWindAffect(position, level)) {
+            if (!Util.canWindAffect(new Vec3(posX, posY, posZ), level)) {
                return wind;
             }
-         } else if (!windAnyway && position.y < worldHeight) {
+         } else if (!windAnyway && posY < worldHeight) {
             return wind;
          }
 
@@ -86,11 +90,11 @@ public class WindEngine {
             float timeScale = 20000.0F;
             float scale = 12000.0F;
             double ang = FBM(
-               position.x / (scale * 3.0F), position.z / (scale * 3.0F), (float)level.getGameTime() / (timeScale * 6.0F), 5, 2.0F, 0.1F, 1.0F
+               posX / (scale * 3.0F), posZ / (scale * 3.0F), (float)level.getGameTime() / (timeScale * 6.0F), 5, 2.0F, 0.1F, 1.0F
             );
             ang *= Math.PI;
             Vec3 dir = new Vec3(Math.cos(ang), 0.0, Math.sin(ang)).normalize();
-            double speed = Math.max(simplexNoise.getValue(-position.z / scale, -position.x / scale, -((float)level.getGameTime()) / timeScale) + 1.0, 0.0)
+            double speed = Math.max(simplexNoise.getValue(-posZ / scale, -posX / scale, -((float)level.getGameTime()) / timeScale) + 1.0, 0.0)
                * 10.0;
             wind = wind.add(dir.multiply(speed, speed, speed));
             WeatherHandler weatherHandler;
@@ -107,9 +111,9 @@ public class WindEngine {
                         tornadicStorms.add(storm);
                      }
 
-                     double distance = dev.dabrelity.atmospherica.util.Util.distance2D(position, storm.position);
+                     double distance = Math.sqrt((posX - storm.position.x)*(posX - storm.position.x) + (posZ - storm.position.z)*(posZ - storm.position.z));
                      if (storm.stormType == 2) {
-                        Vec3 relativePos = position.subtract(storm.position);
+                        Vec3 relativePos = new Vec3(posX - storm.position.x, posY - storm.position.y, posZ - storm.position.z);
                         Vec3 inward = new Vec3(-relativePos.x, 0.0, -relativePos.z).normalize();
                         Vec3 rotational = new Vec3(relativePos.z, 0.0, -relativePos.x).normalize();
                         double pullStrngth = storm.windspeed * 0.3F;
@@ -123,14 +127,14 @@ public class WindEngine {
                         double d = storm.maxWidth / (1.5F + storm.windspeed / 30.0F);
                         float effect = Mth.clamp((float)distance / storm.maxWidth, 0.0F, 1.0F);
                         float noiseX = (float)FBM(
-                           position.x / (storm.maxWidth * 0.5F), position.z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
+                           posX / (storm.maxWidth * 0.5F), posZ / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
                            1.0F
                         );
                         float noiseZ = (float)FBM(
-                           position.z / (storm.maxWidth * 0.5F), position.x / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
+                           posZ / (storm.maxWidth * 0.5F), posX / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
@@ -145,7 +149,7 @@ public class WindEngine {
                            0.5F * mult
                         );
                         float noise = (float)FBM(
-                           position.x / (storm.maxWidth * 0.5F), position.z / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
+                           posX / (storm.maxWidth * 0.5F), posZ / (storm.maxWidth * 0.5F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
@@ -153,7 +157,7 @@ public class WindEngine {
                         );
                         mult *= Mth.clamp(noise, 0.0F, 1.0F) * 0.2F + 0.8F;
                         float noise2 = (float)FBM(
-                           position.x / (storm.maxWidth * 0.1F), position.z / (storm.maxWidth * 0.1F), (float)level.getGameTime() / timeScale,
+                           posX / (storm.maxWidth * 0.1F), posZ / (storm.maxWidth * 0.1F), (float)level.getGameTime() / timeScale,
                            5,
                            2.0F,
                            0.2F,
@@ -177,11 +181,11 @@ public class WindEngine {
 
                         for (Vorticy vorticy : storm.vorticies) {
                            Vec3 pos = vorticy.getPosition();
-                           Vec3 rPos = position.subtract(pos);
+                           Vec3 rPos = new Vec3(posX - pos.x, posY - pos.y, posZ - pos.z);
                            Vec3 in = new Vec3(-rPos.x, 0.0, -rPos.z).normalize();
                            Vec3 rot = new Vec3(rPos.z, 0.0, -rPos.x).normalize();
                            float width = vorticy.getWidth();
-                           double dist = dev.dabrelity.atmospherica.util.Util.distance2D(position, pos);
+                           double dist = Math.sqrt((posX - pos.x)*(posX - pos.x) + (posZ - pos.z)*(posZ - pos.z));
                            double pullStrn = vorticy.windspeedMult * storm.windspeed * 0.3F;
                            double rotStrn = vorticy.windspeedMult * storm.windspeed * 0.7F;
                            float m = (float)Math.pow(1.0F - Mth.clamp((float)dist / width, 0.0F, 1.0F), 3.75);
@@ -193,7 +197,7 @@ public class WindEngine {
                      }
 
                      if (storm.stormType == 1) {
-                        Vec2 v2fWorldPos = new Vec2((float)position.x, (float)position.z);
+                        Vec2 v2fWorldPos = new Vec2((float)posX, (float)posZ);
                         Vec2 stormVel = new Vec2((float)storm.velocity.x, (float)storm.velocity.z);
                         Vec2 v2fStormPos = new Vec2((float)storm.position.x, (float)storm.position.z);
                         Vec2 right = new Vec2(stormVel.y, -stormVel.x).normalized();
@@ -214,8 +218,8 @@ public class WindEngine {
                         Vec2 facing = v2fWorldPos.add(nearPoint.negated());
                         float behind = -facing.dot(fwd);
                         behind += (float)FBM(
-                              position.x / (ServerConfig.stormSize * 2.0),
-                              position.z / (ServerConfig.stormSize * 2.0),
+                              posX / (ServerConfig.stormSize * 2.0),
+                              posZ / (ServerConfig.stormSize * 2.0),
                               (float)level.getGameTime() / timeScale,
                               5,
                               2.0F,
@@ -257,8 +261,8 @@ public class WindEngine {
                         }
 
                         float gustNoise = (float)FBM(
-                           position.z / (ServerConfig.stormSize * 2.0),
-                           position.x / (ServerConfig.stormSize * 2.0),
+                           posZ / (ServerConfig.stormSize * 2.0),
+                           posX / (ServerConfig.stormSize * 2.0),
                            (float)level.getGameTime() / timeScale,
                            7,
                            2.0F,
@@ -282,7 +286,7 @@ public class WindEngine {
                      }
 
                      if (storm.stormType == 0) {
-                        Vec3 relativePosx = position.subtract(storm.position);
+                        Vec3 relativePosx = new Vec3(posX - storm.position.x, posY - storm.position.y, posZ - storm.position.z);
                         Vec3 inwardx = new Vec3(-relativePosx.x, 0.0, -relativePosx.z).normalize();
                         Vec3 rotationalx = new Vec3(relativePosx.z, 0.0, -relativePosx.x).normalize();
                         double pullStrngthx = 1.0 - Mth.clamp(distance / (ServerConfig.stormSize * 4.0), 0.0, 1.0);
@@ -320,13 +324,13 @@ public class WindEngine {
             wind = wind.normalize().multiply(val, val, val);
          }
 
-         if (blockPos.getY() > 85) {
-            float val = Mth.clamp((blockPos.getY() - 85) / 40.0F, 0.0F, 1.0F) / 3.0F + 1.0F;
+         if ((int)posY > 85) {
+            float val = Mth.clamp(((int)posY - 85) / 40.0F, 0.0F, 1.0F) / 3.0F + 1.0F;
             wind = wind.multiply(val, val, val);
          }
 
          wind = wind.add(rawWind);
-         int heightAbove = blockPos.getY() - worldHeight;
+         int heightAbove = (int)posY - worldHeight;
          if (heightAbove > 0) {
             float val = Mth.clamp(heightAbove / 15.0F, 0.0F, 1.0F) / 3.0F + 1.0F;
             wind = wind.multiply(val, val, val);
@@ -336,12 +340,12 @@ public class WindEngine {
          Vec3 tornadicWind = Vec3.ZERO;
          if (!ignoreStorms && !ignoreTornadoes) {
             for (Storm tornadicStorm : tornadicStorms) {
-               Vec3 relativePosx = position.subtract(tornadicStorm.position);
+               Vec3 relativePosx = new Vec3(posX - tornadicStorm.position.x, posY - tornadicStorm.position.y, posZ - tornadicStorm.position.z);
                Vec3 inwardx = new Vec3(-relativePosx.x, 0.0, -relativePosx.z).normalize();
                Vec3 rotationalx = new Vec3(relativePosx.z, 0.0, -relativePosx.x).normalize();
-               double distancex = position.distanceTo(tornadicStorm.position);
+               double distancex = Math.sqrt((posX - tornadicStorm.position.x)*(posX - tornadicStorm.position.x) + (posY - tornadicStorm.position.y)*(posY - tornadicStorm.position.y) + (posZ - tornadicStorm.position.z)*(posZ - tornadicStorm.position.z));
                if (!(distancex > tornadicStorm.width * 2.0F)) {
-                  double windEffect = tornadicStorm.getWind(position);
+                  double windEffect = tornadicStorm.getWind(new Vec3(posX, posY, posZ));
                   tornadicEffect = Mth.clamp((float)windEffect / Math.max(tornadicStorm.windspeed, 30), tornadicEffect, 1.0F);
                   if (Float.isNaN(tornadicEffect)) {
                      tornadicEffect = 0.0F;
@@ -359,10 +363,10 @@ public class WindEngine {
    }
 
    public static Vec3 getWind(BlockPos position, Level level, boolean ignoreStorms, boolean ignoreTornadoes, boolean windCheck) {
-      return getWind(new Vec3(position.getX(), position.getY() + 1, position.getZ()), level, ignoreStorms, ignoreTornadoes, windCheck, false);
+      return getWind(position.getX(), position.getY() + 1, position.getZ(), level, ignoreStorms, ignoreTornadoes, windCheck, false);
    }
 
    public static Vec3 getWind(BlockPos position, Level level) {
-      return getWind(new Vec3(position.getX(), position.getY() + 1, position.getZ()), level, false, false, true, false);
+      return getWind(position.getX(), position.getY() + 1, position.getZ(), level, false, false, true, false);
    }
 }
