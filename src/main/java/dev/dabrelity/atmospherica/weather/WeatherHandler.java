@@ -104,17 +104,20 @@ public abstract class WeatherHandler implements IWorldData {
                float intense = 0.0F;
                float staticBands = (float)Math.sin(angle - (Math.PI / 2));
                staticBands *= (float)Math.pow(Mth.clamp(dist / (storm.maxWidth * 0.25F), 0.0, 1.0), 0.1F);
-               staticBands *= 1.25F * (float)Math.pow(intensity, 0.75);
+               // ⚡ Bolt: Fast pow(x, 0.75) via sqrt(x) * sqrt(sqrt(x)) to avoid Math.pow overhead
+               staticBands *= 1.25F * (float)(Math.sqrt(intensity) * Math.sqrt(Math.sqrt(intensity)));
                if (staticBands < 0.0F) {
                   weak += Math.abs(staticBands);
                } else {
-                  weak += Math.abs(staticBands) * (float)Math.pow(1.0 - Mth.clamp(dist / (storm.maxWidth * 0.65F), 0.0, 1.0), 0.5);
+                  // ⚡ Bolt: Fast pow(x, 0.5) via Math.sqrt
+                  weak += Math.abs(staticBands) * (float)Math.sqrt(1.0 - Mth.clamp(dist / (storm.maxWidth * 0.65F), 0.0, 1.0));
                   weak *= Mth.clamp((storm.windspeed - 70.0F) / 40.0F, 0.0F, 1.0F);
                }
 
                float rotatingBands = (float)Math.sin((angle2 + Math.toRadians(storm.tickCount / 8.0F)) * 6.0);
                rotatingBands *= (float)Math.pow(Mth.clamp(dist / (storm.maxWidth * 0.25F), 0.0, 1.0), 0.1F);
-               rotatingBands *= 1.25F * (float)Math.pow(intensity, 0.75);
+               // ⚡ Bolt: Fast pow(x, 0.75) via sqrt(x) * sqrt(sqrt(x))
+               rotatingBands *= 1.25F * (float)(Math.sqrt(intensity) * Math.sqrt(Math.sqrt(intensity)));
                strong += Mth.lerp(0.45F, Math.abs(rotatingBands) * 0.3F + 0.7F, weak);
                intense += Mth.lerp(0.3F, Math.abs(rotatingBands) * 0.2F + 0.8F, weak);
                weak = (Math.abs(rotatingBands) * 0.3F + 0.6F) * weak;
@@ -127,14 +130,18 @@ public abstract class WeatherHandler implements IWorldData {
                float eye = (float)Math.sin((angleE + Math.toRadians(storm.tickCount / 4.0F)) * 2.0);
                float efc = Mth.lerp(Mth.clamp((storm.windspeed - 100.0F) / 50.0F, 0.0F, 1.0F), 0.15F, 0.4F);
                localRain = Math.max(
-                  (float)Math.pow(1.0 - Mth.clamp(dist / (storm.maxWidth * efc), 0.0, 1.0), 0.5) * (Math.abs(eye * 0.1F) + 0.9F) * 1.35F * intensity,
+                  // ⚡ Bolt: Fast pow(x, 0.5) via Math.sqrt
+                  (float)Math.sqrt(1.0 - Mth.clamp(dist / (storm.maxWidth * efc), 0.0, 1.0)) * (Math.abs(eye * 0.1F) + 0.9F) * 1.35F * intensity,
                   localRain
                );
-               localRain *= (float)Math.pow(1.0 - Mth.clamp(dist / storm.maxWidth, 0.0, 1.0), 0.5);
+               // ⚡ Bolt: Fast pow(x, 0.5) via Math.sqrt
+               localRain *= (float)Math.sqrt(1.0 - Mth.clamp(dist / storm.maxWidth, 0.0, 1.0));
+               // ⚡ Bolt: Fast pow(x, 2.0) via direct multiplication
+               float clampRainDist = Mth.clamp((float)dist / (storm.maxWidth * 0.1F), 0.0F, 1.0F);
                localRain *= Mth.lerp(
                   0.5F + Mth.clamp((storm.windspeed - 65.0F) / 40.0F, 0.0F, 1.0F) * 0.5F,
                   1.0F,
-                  (float)Math.pow(Mth.clamp(dist / (storm.maxWidth * 0.1F), 0.0, 1.0), 2.0)
+                  clampRainDist * clampRainDist
                );
                if (localRain > 0.6F) {
                   float dif = (localRain - 0.6F) / 2.5F;
@@ -152,8 +159,10 @@ public abstract class WeatherHandler implements IWorldData {
                Vec2 fwd = stormVel.normalized();
                Vec2 le = Util.mulVec2(right, -((float)ServerConfig.stormSize) * 5.0F);
                Vec2 ri = Util.mulVec2(right, (float)ServerConfig.stormSize * 5.0F);
+               // ⚡ Bolt: Fast pow(x, 2.0) via direct multiplication
+               float clampDistOff = Mth.clamp((float)dist / ((float)ServerConfig.stormSize * 5.0F), 0.0F, 1.0F);
                Vec2 off = Util.mulVec2(
-                  fwd, -((float)Math.pow(Mth.clamp(dist / ((float)ServerConfig.stormSize * 5.0F), 0.0, 1.0), 2.0)) * ((float)ServerConfig.stormSize * 1.5F)
+                  fwd, -(clampDistOff * clampDistOff) * ((float)ServerConfig.stormSize * 1.5F)
                );
                le = le.add(off);
                ri = ri.add(off);
@@ -179,7 +188,9 @@ public abstract class WeatherHandler implements IWorldData {
                      p = 1.0F - (p - start) / (1.0F - start);
                   }
 
-                  perc = (float)Math.pow(Mth.clamp(p, 0.0F, 1.0F), 3.0);
+                  // ⚡ Bolt: Fast pow(x, 3.0) via direct multiplication
+                  float clampP = Mth.clamp(p, 0.0F, 1.0F);
+                  perc = clampP * clampP * clampP;
                }
 
                if (storm.stage <= 0) {

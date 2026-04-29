@@ -114,9 +114,13 @@ public class WindEngine {
                         Vec3 rotational = new Vec3(relativePos.z, 0.0, -relativePos.x).normalize();
                         double pullStrngth = storm.windspeed * 0.3F;
                         double rotStrngth = storm.windspeed * 0.7F;
-                        float mult = (float)Math.pow(1.0 - Mth.clamp(distance / storm.maxWidth, 0.0, 1.0), 3.0);
+                        // ⚡ Bolt: Fast pow(x, 3.0) via direct multiplication to avoid Math.pow overhead
+                        float clampDist = 1.0F - Mth.clamp((float)distance / storm.maxWidth, 0.0F, 1.0F);
+                        float mult = clampDist * clampDist * clampDist;
                         if (distance < storm.maxWidth * 0.1F) {
-                           mult += (float)Math.pow(1.0 - Mth.clamp(distance / (storm.maxWidth * 0.1F), 0.0, 1.0), 0.75) * 0.15F;
+                           // ⚡ Bolt: Fast pow(x, 0.75) via sqrt(x) * sqrt(sqrt(x)) to avoid Math.pow overhead
+                           float clampDistIn = 1.0F - Mth.clamp((float)distance / (storm.maxWidth * 0.1F), 0.0F, 1.0F);
+                           mult += (float)(Math.sqrt(clampDistIn) * Math.sqrt(Math.sqrt(clampDistIn))) * 0.15F;
                            mult = Mth.clamp(mult, 0.0F, 1.0F);
                         }
 
@@ -139,9 +143,10 @@ public class WindEngine {
                         relativePos = relativePos.add(new Vec3(noiseX * storm.maxWidth * 0.3F * effect, 0.0, noiseZ * storm.maxWidth * 0.3F * effect));
                         double angle = Math.atan2(relativePos.z, relativePos.x) - distance / d;
                         float bands = (float)Math.sin((angle + Math.toRadians(storm.tickCount / 8.0F)) * 4.0);
+                        // ⚡ Bolt: Fast pow(x, 2.0) via direct multiplication (Math.abs is redundant)
                         mult += Mth.lerp(
                            1.0F - Mth.clamp((float)distance / (storm.maxWidth * 0.35F), 0.0F, 1.0F),
-                           (float)Math.pow(Math.abs(bands), 2.0) * 0.5F * mult,
+                           (bands * bands) * 0.5F * mult,
                            0.5F * mult
                         );
                         float noise = (float)FBM(
@@ -160,11 +165,15 @@ public class WindEngine {
                            1.0F
                         );
                         mult *= Mth.clamp(noise2, 0.0F, 1.0F) * 0.1F + 0.9F;
-                        mult *= 1.15F + (float)Math.pow(1.0 - Mth.clamp((distance - storm.maxWidth * 0.1F) / (storm.maxWidth * 0.1F), 0.0, 1.0), 2.5) * 0.35F;
+                        // ⚡ Bolt: Fast pow(x, 2.5) via x * x * sqrt(x)
+                        float clampDistOut = 1.0F - Mth.clamp((float)(distance - storm.maxWidth * 0.1F) / (storm.maxWidth * 0.1F), 0.0F, 1.0F);
+                        mult *= 1.15F + (clampDistOut * clampDistOut * (float)Math.sqrt(clampDistOut)) * 0.35F;
                         float eye = (float)Math.pow(
                            Mth.clamp(distance / (storm.maxWidth * 0.1F), 0.0, 1.0), Mth.lerp(Mth.clamp(storm.windspeed / 120.0F, 0.0F, 1.0F), 0.5F, 4.0F)
                         );
-                        mult *= Mth.lerp((float)Math.pow(Mth.clamp(storm.windspeed / 65.0F, 0.0F, 1.0F), 2.0), 1.0F, eye);
+                        // ⚡ Bolt: Fast pow(x, 2.0) via direct multiplication
+                        float clampWind = Mth.clamp(storm.windspeed / 65.0F, 0.0F, 1.0F);
+                        mult *= Mth.lerp(clampWind * clampWind, 1.0F, eye);
                         Vec3 vec = inward.multiply(pullStrngth, 0.0, pullStrngth)
                            .add(rotational.multiply(rotStrngth, 0.0, rotStrngth))
                            .multiply(mult, 0.0, mult);
@@ -184,7 +193,9 @@ public class WindEngine {
                            double dist = dev.dabrelity.atmospherica.util.Util.distance2D(position, pos);
                            double pullStrn = vorticy.windspeedMult * storm.windspeed * 0.3F;
                            double rotStrn = vorticy.windspeedMult * storm.windspeed * 0.7F;
-                           float m = (float)Math.pow(1.0F - Mth.clamp((float)dist / width, 0.0F, 1.0F), 3.75);
+                           // ⚡ Bolt: Fast pow(x, 3.75) via x^3 * x^0.75 (sqrt(x) * sqrt(sqrt(x)))
+                           float clampVortDist = 1.0F - Mth.clamp((float)dist / width, 0.0F, 1.0F);
+                           float m = clampVortDist * clampVortDist * clampVortDist * (float)(Math.sqrt(clampVortDist) * Math.sqrt(Math.sqrt(clampVortDist)));
                            m *= Mth.clamp((float)dist / (width * 0.1F), 0.0F, 1.0F);
                            m *= 7.0F;
                            Vec3 v = in.multiply(pullStrn, 0.0, pullStrn).add(rot.multiply(rotStrn, 0.0, rotStrn)).multiply(m, 0.0, m);
@@ -200,10 +211,11 @@ public class WindEngine {
                         Vec2 fwd = stormVel.normalized();
                         Vec2 le = Util.mulVec2(right, -((float)ServerConfig.stormSize) * 5.0F);
                         Vec2 ri = Util.mulVec2(right, (float)ServerConfig.stormSize * 5.0F);
+                        // ⚡ Bolt: Fast pow(x, 2.0) via direct multiplication
+                        float clampOff = Mth.clamp((float)distance / ((float)ServerConfig.stormSize * 5.0F), 0.0F, 1.0F);
                         Vec2 off = Util.mulVec2(
                            fwd,
-                           -((float)Math.pow(Mth.clamp(distance / ((float)ServerConfig.stormSize * 5.0F), 0.0, 1.0), 2.0))
-                              * ((float)ServerConfig.stormSize * 1.5F)
+                           -(clampOff * clampOff) * ((float)ServerConfig.stormSize * 1.5F)
                         );
                         le = le.add(off);
                         ri = ri.add(off);
@@ -271,8 +283,10 @@ public class WindEngine {
                            perc *= 1.0F + px * 0.3F;
                         }
 
+                        // ⚡ Bolt: Fast pow(x, 1.5) via x * sqrt(x)
+                        float gustBase = 0.8F + gustNoise * 0.5F;
                         perc *= Mth.lerp(
-                           Mth.clamp(behind / ((float)ServerConfig.stormSize * 3.0F), 0.0F, 1.0F), (float)Math.pow(0.8F + gustNoise * 0.5F, 1.5), 0.5F
+                           Mth.clamp(behind / ((float)ServerConfig.stormSize * 3.0F), 0.0F, 1.0F), gustBase * (float)Math.sqrt(gustBase), 0.5F
                         );
                         perc *= Mth.sqrt(1.0F - Mth.clamp(d / sze, 0.0F, 1.0F));
                         wind = wind.add(
