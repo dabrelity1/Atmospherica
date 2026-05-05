@@ -1,3 +1,4 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+\n## 2026-05-05 - Variable Hoisting Name Conflicts\n**Learning:** When applying variable hoisting optimizations to large methods, ensure the new hoisted variable names do not conflict with identically named local variables previously defined in the same scope to prevent compilation failures.\n**Action:** Use `grep` to check the entire method scope for existing variable names (like `camPos`) before hoisting new variables with that name.

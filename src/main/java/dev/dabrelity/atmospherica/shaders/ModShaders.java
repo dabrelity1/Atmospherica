@@ -320,16 +320,19 @@ public class ModShaders {
                 }
 
                 int count = 0;
+                Vec3 camPosition = camera.getPosition();
+                double camX = camPosition.x;
+                double camZ = camPosition.z;
+
                 for (int i = 0; i < storms.size() && i < 16; i++) {
                     Storm storm = storms.get(i);
+
+                    double dx = storm.position.x - camX;
+                    double dz = storm.position.z - camZ;
+
                     if (
                         storm.lastPosition == null ||
-                        storm.position
-                            .multiply(1.0, 0.0, 1.0)
-                            .distanceTo(
-                                camera.getPosition().multiply(1.0, 0.0, 1.0)
-                            ) >
-                        32000.0 ||
+                        (dx * dx + dz * dz) > (32000.0 * 32000.0) ||
                         (storm.stage <= 0 &&
                             storm.energy <= 0 &&
                             storm.stormType != 2)
