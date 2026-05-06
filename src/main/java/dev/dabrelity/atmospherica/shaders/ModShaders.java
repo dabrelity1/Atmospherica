@@ -322,14 +322,11 @@ public class ModShaders {
                 int count = 0;
                 for (int i = 0; i < storms.size() && i < 16; i++) {
                     Storm storm = storms.get(i);
+                    double dx = storm.position.x - camPos.x;
+                    double dz = storm.position.z - camPos.z;
                     if (
                         storm.lastPosition == null ||
-                        storm.position
-                            .multiply(1.0, 0.0, 1.0)
-                            .distanceTo(
-                                camera.getPosition().multiply(1.0, 0.0, 1.0)
-                            ) >
-                        32000.0 ||
+                        (dx * dx + dz * dz) > 1024000000.0 ||
                         (storm.stage <= 0 &&
                             storm.energy <= 0 &&
                             storm.stormType != 2)
@@ -379,10 +376,7 @@ public class ModShaders {
                 setUniformFloat(effect, "overcastPerc", (float) ServerConfig.overcastPercent);
                 setUniformFloat(effect, "rainStrength", (float) ServerConfig.rainStrength);
                 
-                Vec3 samplePos = camera
-                    .getPosition()
-                    .multiply(1.0, 0.0, 1.0)
-                    .add(0.0, ServerConfig.layer0Height, 0.0);
+                Vec3 samplePos = new Vec3(camPos.x, ServerConfig.layer0Height, camPos.z);
                 Vec3 lightingColor = new Vec3(1.0, 1.0, 1.0);
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.741, 0.318, 0.227),
