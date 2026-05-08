@@ -45,4 +45,19 @@ public class ParticleMixin implements ParticleData {
    public Vec3 getPosition() {
       return new Vec3(this.x, this.y, this.z);
    }
+
+   @Override
+   public double getX() {
+      return this.x;
+   }
+
+   @Override
+   public double getY() {
+      return this.y;
+   }
+
+   @Override
+   public double getZ() {
+      return this.z;
+   }
 }

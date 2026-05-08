@@ -10,4 +10,10 @@ public interface ParticleData {
    void setVelocity(Vec3 var1);
 
    Vec3 getPosition();
+
+   double getX();
+
+   double getY();
+
+   double getZ();
 }
