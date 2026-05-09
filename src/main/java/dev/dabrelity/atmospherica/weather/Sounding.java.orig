@@ -18,7 +18,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class Sounding {
-   public Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> data = new TreeMap<>();
+   public TreeMap<Integer, ThermodynamicEngine.AtmosphericDataPoint> data = new TreeMap();
    Vec3 position;
    public WeatherHandler weatherHandler;
 
@@ -230,7 +230,8 @@ public class Sounding {
 
    public CompoundTag serializeNBT() {
       CompoundTag compoundTag = new CompoundTag();
-      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> entries = new java.util.ArrayList<>(this.data.entrySet());
+      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> entries = new java.util.ArrayList<>(
+         new java.util.ArrayList<>(this.data.entrySet()));
       java.util.Collections.reverse(entries);
 
       for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : entries) {
@@ -242,7 +243,8 @@ public class Sounding {
 
    public String toString() {
       StringBuilder str = new StringBuilder();
-      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> entries = new java.util.ArrayList<>(this.data.entrySet());
+      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> entries = new java.util.ArrayList<>(
+         new java.util.ArrayList<>(this.data.entrySet()));
       java.util.Collections.reverse(entries);
 
       for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : entries) {
@@ -267,7 +269,7 @@ public class Sounding {
    public static class Parcel {
       public Sounding sounding;
       public ThermodynamicEngine.AtmosphericDataPoint parcel;
-      public Map<Float, Float> profile = new TreeMap<>();
+      public TreeMap<Float, Float> profile = new TreeMap();
       public float lclP;
       public float lfcP = -1.0F;
       public float elP = -1.0F;
