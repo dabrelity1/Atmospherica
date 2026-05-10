@@ -254,10 +254,11 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                               localDBZ
                            );
                            localDBZ *= (float)Math.pow(1.0 - Mth.clamp(rawDist / storm.maxWidth, 0.0, 1.0), 0.5);
+                           float _rawDistClamp1 = (float)Mth.clamp(rawDist / (storm.maxWidth * 0.1F), 0.0, 1.0);
                            localDBZ *= Mth.lerp(
                               0.5F + Mth.clamp((storm.windspeed - 65.0F) / 40.0F, 0.0F, 1.0F) * 0.5F,
                               1.0F,
-                              (float)Math.pow(Mth.clamp(rawDist / (storm.maxWidth * 0.1F), 0.0, 1.0), 2.0)
+                              _rawDistClamp1 * _rawDistClamp1
                            );
                            localDBZ *= Mth.lerp(Mth.clamp((storm.windspeed - 75.0F) / 50.0F, 0.0F, 1.0F), 0.8F + (float)shapeNoise2 * 0.4F, 1.0F);
                            localDBZ *= 0.8F + (float)shapeNoise * 0.4F;
@@ -278,7 +279,8 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                            Vec2 fwd = stormVel.normalized();
                            Vec2 le = Util.mulVec2(right, -3000.0F * (float)scale);
                            Vec2 ri = Util.mulVec2(right, 3000.0F * (float)scale);
-                           Vec2 off = Util.mulVec2(fwd, -((float)Math.pow(Mth.clamp(rawDist / (3000.0 * scale), 0.0, 1.0), 2.0)) * (900.0F * (float)scale));
+                           float _rawDistClamp2 = (float)Mth.clamp(rawDist / (3000.0 * scale), 0.0, 1.0);
+                           Vec2 off = Util.mulVec2(fwd, -(_rawDistClamp2 * _rawDistClamp2) * (900.0F * (float)scale));
                            le = le.add(off);
                            ri = ri.add(off);
                            le = le.add(v2fStormPos);
@@ -307,10 +309,10 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                               float start = 0.06F;
                               if (p <= start) {
                                  p /= start;
-                                 localDBZ += (float)Math.pow(p, 2.0);
+                                 localDBZ += p * p;
                               } else {
                                  p = 1.0F - (p - start) / (1.0F - start);
-                                 localDBZ += (float)Math.pow(p, 4.0);
+                                 localDBZ += p * p * p * p;
                               }
                            }
 
@@ -337,7 +339,7 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                               case 1 -> 0.1F + storm.energy / 100.0F * 0.7F;
                               case 2 -> 0.8F + storm.energy / 100.0F * 0.4F;
                               case 3 -> 1.2F + storm.windspeed / 100.0F;
-                              default -> (float)Math.pow(storm.energy / 100.0F, 2.0) * 0.1F;
+                              default -> ((storm.energy / 100.0F) * (storm.energy / 100.0F)) * 0.1F;
                            };
                            if (intensityxx > 0.8F) {
                               intensityxx = 0.8F + (intensityxx - 0.8F) / 4.0F;
@@ -362,7 +364,9 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                               xM = 1.0F;
                            }
 
-                           double coreDist = Math.sqrt(Math.pow((worldPos.x - corePos.x) * xM, 2.0) + Math.pow((worldPos.z - corePos.z) * 1.5, 2.0)) / scale;
+                           double _cdX = (worldPos.x - corePos.x) * xM;
+                           double _cdZ = (worldPos.z - corePos.z) * 1.5;
+                           double coreDist = Math.sqrt(_cdX * _cdX + _cdZ * _cdZ) / scale;
                            dist /= scale;
                            coreDist *= 0.9 + shapeNoise * 0.3;
                            Vec3 relPosx = torPos.subtract(worldPos).multiply(scale, 0.0, scale);
@@ -374,7 +378,7 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                            anglex += Math.toRadians(180.0);
                            angle2x += Math.toRadians(180.0);
                            angle3 += Math.toRadians(180.0);
-                           double angleMod = Math.toRadians(40.0) * (1.0 - Mth.clamp(Math.pow(windspeed / 100.0, 2.0), 0.0, 0.9));
+                           double angleMod = Math.toRadians(40.0) * (1.0 - Mth.clamp((windspeed / 100.0) * (windspeed / 100.0), 0.0, 0.9));
                            double noise = (shapeNoise4 - 0.5) * Math.toRadians(10.0);
                            anglex += angleMod + noise;
                            angle2x += angleMod + noise;
@@ -383,14 +387,15 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
                            inflow = Math.pow(Math.abs(inflow), 0.5) * Math.sin(inflow);
                            inflow *= 1.0 - Mth.clamp(dist / 2400.0, 0.0, 1.0);
                            if (inflow < 0.0) {
-                              localDBZ += (float)(inflow * 2.0 * Math.pow(Mth.clamp((windspeed - 15.0F) / 50.0, 0.0, 1.0), 2.0));
+                              double _wsClamp2 = Mth.clamp((windspeed - 15.0F) / 50.0, 0.0, 1.0);
+                              localDBZ += (float)(inflow * 2.0 * (_wsClamp2 * _wsClamp2));
                            }
 
                            double surge = Math.sin(angle2x - Math.toRadians(60.0));
                            surge = Math.abs(surge) * Math.sin(surge);
                            surge *= (1.0 - Math.pow(Mth.clamp(dist / 1200.0, 0.0, 1.0), 1.5)) * (1.0 - Mth.clamp(dist / 200.0, 0.0, 0.3));
                            if (surge > 0.0) {
-                              double n = 0.8 * (1.0 - Mth.clamp(Math.pow(windspeed / 80.0, 2.0), 0.0, 1.0));
+                              double n = 0.8 * (1.0 - Mth.clamp((windspeed / 80.0) * (windspeed / 80.0), 0.0, 1.0));
                               double m = 1.0 - shapeNoise4 * n;
                               localDBZ += (float)(
                                  surge * 1.5 * Mth.clamp(dist / 500.0, 0.0, 1.0) * Math.sqrt(Mth.clamp((windspeed - 20.0F) / 50.0, 0.0, 1.0)) * m
@@ -399,7 +404,8 @@ public class RadarRenderer<T extends BlockEntity> implements BlockEntityRenderer
 
                            double shield = Math.sin(angle3 - Math.toRadians(60.0));
                            shield = Math.abs(shield) * Math.sin(shield);
-                           shield *= 1.0 - Math.pow(Mth.clamp(dist / 2400.0, 0.0, 1.0), 2.0);
+                           double _distClamp5 = Mth.clamp(dist / 2400.0, 0.0, 1.0);
+                           shield *= 1.0 - (_distClamp5 * _distClamp5);
                            if (shield > 0.0) {
                               localDBZ -= (float)(
                                  shield * 2.0 * Mth.clamp(dist / 1000.0, 0.0, 1.0) * Math.sqrt(Mth.clamp((windspeed - 30.0F) / 80.0, 0.0, 1.0))

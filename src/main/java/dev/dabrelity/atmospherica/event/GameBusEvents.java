@@ -151,7 +151,8 @@ public class GameBusEvents {
 
                      if (!blacklisted && !ServerConfig.blacklistedBlocks.contains(block) && Util.canWindAffect(check.getCenter(), level)) {
                         if (!state.is(Blocks.GLASS) && !state.is(Blocks.GLASS_PANES)) {
-                           double percChance = Mth.clamp(Math.pow(Mth.clamp(Math.max(wind - blockStrength, 0.0) / 20.0, 0.0, 1.0), 2.0) + 0.02, 0.0, 1.0);
+                           double _windClamp1 = Mth.clamp(Math.max(wind - blockStrength, 0.0) / 20.0, 0.0, 1.0);
+                           double percChance = Mth.clamp((_windClamp1 * _windClamp1) + 0.02, 0.0, 1.0);
                            if (wind < blockStrength) {
                               percChance = 0.0;
                            }

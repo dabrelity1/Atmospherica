@@ -258,7 +258,8 @@ public class Storm {
          vorticySpawnChance = 0.25F;
       }
 
-      vorticySpawnChance += Mth.clamp((float)Math.pow((this.windspeed - 100.0F) / 200.0F, 2.0), 0.0F, 0.5F);
+      float _vsc1 = (this.windspeed - 100.0F) / 200.0F;
+      vorticySpawnChance += Mth.clamp(_vsc1 * _vsc1, 0.0F, 0.5F);
       if (this.windspeed >= 39.0F && this.stormType == 2) {
          vorticySpawnChance *= 2.0F;
          if (!this.level.isClientSide && Atmospherica.RANDOM.nextFloat() < vorticySpawnChance * 0.05F && this.vorticies.size() < 10) {
@@ -664,7 +665,8 @@ public class Storm {
       if (!aboveState.isAir()) {
          Block aboveBlock = aboveState.getBlock();
          float blockStrength = getBlockStrength(aboveBlock, this.level, blockPosTop.above());
-         double percChance = Mth.clamp(Math.pow(Mth.clamp(Math.max(windEffect - blockStrength, 0.0) / 20.0, 0.0, 1.0), 4.0) + 0.02, 0.0, 1.0)
+         double _wec1 = Mth.clamp(Math.max(windEffect - blockStrength, 0.0) / 20.0, 0.0, 1.0);
+         double percChance = Mth.clamp((_wec1 * _wec1 * _wec1 * _wec1) + 0.02, 0.0, 1.0)
             * 0.05
             * percAdj;
          if (windEffect < blockStrength) {
@@ -731,7 +733,8 @@ public class Storm {
             stretch = 50.0;
          }
 
-         double percChancex = Mth.clamp(Math.pow(Mth.clamp(Math.max(windEffect - blockStrengthx, 0.0) / stretch, 0.0, 1.0), 4.0) + 0.02, 0.0, 1.0)
+         double _wec2 = Mth.clamp(Math.max(windEffect - blockStrengthx, 0.0) / stretch, 0.0, 1.0);
+         double percChancex = Mth.clamp((_wec2 * _wec2 * _wec2 * _wec2) + 0.02, 0.0, 1.0)
             * 0.05
             * percAdj;
          if (windEffect < blockStrengthx) {
