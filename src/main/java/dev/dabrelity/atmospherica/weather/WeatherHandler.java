@@ -131,10 +131,11 @@ public abstract class WeatherHandler implements IWorldData {
                   localRain
                );
                localRain *= (float)Math.pow(1.0 - Mth.clamp(dist / storm.maxWidth, 0.0, 1.0), 0.5);
+               float _distClamp1 = (float)Mth.clamp(dist / (storm.maxWidth * 0.1F), 0.0, 1.0);
                localRain *= Mth.lerp(
                   0.5F + Mth.clamp((storm.windspeed - 65.0F) / 40.0F, 0.0F, 1.0F) * 0.5F,
                   1.0F,
-                  (float)Math.pow(Mth.clamp(dist / (storm.maxWidth * 0.1F), 0.0, 1.0), 2.0)
+                  _distClamp1 * _distClamp1
                );
                if (localRain > 0.6F) {
                   float dif = (localRain - 0.6F) / 2.5F;
@@ -152,8 +153,9 @@ public abstract class WeatherHandler implements IWorldData {
                Vec2 fwd = stormVel.normalized();
                Vec2 le = Util.mulVec2(right, -((float)ServerConfig.stormSize) * 5.0F);
                Vec2 ri = Util.mulVec2(right, (float)ServerConfig.stormSize * 5.0F);
+               float _distClamp2 = (float)Mth.clamp(dist / ((float)ServerConfig.stormSize * 5.0F), 0.0, 1.0);
                Vec2 off = Util.mulVec2(
-                  fwd, -((float)Math.pow(Mth.clamp(dist / ((float)ServerConfig.stormSize * 5.0F), 0.0, 1.0), 2.0)) * ((float)ServerConfig.stormSize * 1.5F)
+                  fwd, -(_distClamp2 * _distClamp2) * ((float)ServerConfig.stormSize * 1.5F)
                );
                le = le.add(off);
                ri = ri.add(off);
@@ -179,7 +181,8 @@ public abstract class WeatherHandler implements IWorldData {
                      p = 1.0F - (p - start) / (1.0F - start);
                   }
 
-                  perc = (float)Math.pow(Mth.clamp(p, 0.0F, 1.0F), 3.0);
+                  float _pClamp = Mth.clamp(p, 0.0F, 1.0F);
+                  perc = _pClamp * _pClamp * _pClamp;
                }
 
                if (storm.stage <= 0) {
