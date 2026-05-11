@@ -1,3 +1,3 @@
-## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
-**Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
-**Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-06-25 - Sensor/Siren Proximity Checks
+**Learning:** Checking for tornado proximity using blockPos.getCenter() inside a storm loop allocated new Vec3 objects on every tick, and calculating exact distance 2D uses Math.sqrt. Furthermore, the math ran before verifying if the storm was actually an active tornado.
+**Action:** When refactoring proximity checks in entities (as done in `TornadoSirenBlockEntity` and `TornadoSensorBlockEntity`), use optimized 2D distance logic (XZ plane) by hoisting scalar coordinates (`blockPos.getX() + 0.5D`) and squared ranges outside loops, performing integer early-exit checks (e.g., `storm.stage` first), and computing distance manually via `(dx*dx + dz*dz) < rangeSq`. Avoid `blockPos.getCenter()` or `Math.sqrt` to prevent continuous `Vec3` allocations.
