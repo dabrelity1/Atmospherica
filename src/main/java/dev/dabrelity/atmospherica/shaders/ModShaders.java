@@ -114,8 +114,9 @@ public class ModShaders {
                 snow = Mth.lerp(0.05F, snow, 0.0F);
             } else {
                 float rain = weatherHandler.getPrecipitation(player.position());
+                double windRatio = wind.length() / 60.0;
                 float snowBlindness = (float) Mth.clamp(
-                    Math.pow(wind.length() / 60.0, 2.0) * rain,
+                    windRatio * windRatio * rain,
                     0.0,
                     1.0
                 );
@@ -213,8 +214,9 @@ public class ModShaders {
                     0.0
                 );
                 setUniformFloat3(effect, "sunDir", (float) sunDir.x, (float) sunDir.y, (float) sunDir.z);
+                double sunIntensityBase = (Math.cos(sunAngle) + 1.0) / 2.0;
                 setUniformFloat(effect, "lightIntensity", 
-                    (float) Math.pow((Math.cos(sunAngle) + 1.0) / 2.0, 3.0));
+                    (float) (sunIntensityBase * sunIntensityBase * sunIntensityBase));
                 setUniformFloat(effect, "downsample", (float) ClientConfig.volumetricsDownsample);
                 
                 if (passes.size() > 1) {
@@ -384,9 +386,10 @@ public class ModShaders {
                     .multiply(1.0, 0.0, 1.0)
                     .add(0.0, ServerConfig.layer0Height, 0.0);
                 Vec3 lightingColor = new Vec3(1.0, 1.0, 1.0);
+                double val = 1.0 - sunDir.y;
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.741, 0.318, 0.227),
-                    Math.pow(1.0 - sunDir.y, 2.5)
+                    val * val * Math.sqrt(val)
                 );
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.314, 0.408, 0.525),
