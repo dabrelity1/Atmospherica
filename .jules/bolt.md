@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-05-19 - ParticleManager Distance Sort
+**Learning:** `ParticleManager` has a hot path where `List.sort` combined with `Particle.getPos().distanceToSqr()` inside the comparator forces massive object allocations (`Vec3`) per comparison (`O(N log N)` calls) because `Particle.getPos()` in `ParticleMixin` instantiates a new `Vec3` every time.
+**Action:** When a method allocating objects is used heavily inside a sorting comparator, calculate the value *once* in a separate pass (`O(N)`), pack it with an identifier (e.g. index) into a primitive `long`, sort the primitives via `Arrays.sort()`, and reconstruct the sort backward. This prevents millions of object instantiations and drastically eases garbage collector pressure.
