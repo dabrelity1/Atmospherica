@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-05-25 - Breaking API Changes in Static Field Optimization
+**Learning:** Changing the types of public static fields (e.g., from `public static List<Block>` to `public static Set<Block>`) in configuration classes constitutes an API breaking change. Even if internal usage compiles, external mods or unforeseen internal downstream uses might rely on the specific `List` interface (like index-based access or passing to methods expecting `List`), leading to hard-to-detect regressions.
+**Action:** When optimizing lookups for public data structures (like blacklists or whitelists) from O(N) to O(1), either maintain the external `List` interface while backing it with an internal `Set` proxy (e.g., overriding `.contains()`), or construct a parallel internal `Set` for high-frequency paths if the public API cannot be safely altered.
