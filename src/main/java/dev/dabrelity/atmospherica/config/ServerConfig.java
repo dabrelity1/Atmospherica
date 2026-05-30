@@ -229,7 +229,7 @@ public class ServerConfig {
             }
          }
 
-         blacklistedBlocks = new ArrayList();
+         List<Block> tempBlacklistedBlocks = new ArrayList<>();
 
          for (Object obj : BLACKLISTED_BLOCKS.get()) {
             String stringx = (String)obj;
@@ -237,30 +237,36 @@ public class ServerConfig {
             if (BuiltInRegistries.BLOCK.containsKey(resourceLocation)) {
                Block block = (Block)BuiltInRegistries.BLOCK.get(resourceLocation);
                Atmospherica.LOGGER.debug("Inserted Block {}", block);
-               blacklistedBlocks.add(block);
+               tempBlacklistedBlocks.add(block);
             } else {
                Atmospherica.LOGGER.warn("Invalid block within config blacklistedblocks: {}", stringx);
             }
          }
 
-         blacklistedBlockTags = new ArrayList();
+         blacklistedBlocks = fastContainsList(tempBlacklistedBlocks);
+
+         List<TagKey<Block>> tempBlacklistedBlockTags = new ArrayList<>();
 
          for (Object obj : BLACKLISTED_BLOCKTAGS.get()) {
             String stringxx = (String)obj;
             ResourceLocation resourceLocation = new ResourceLocation(stringxx);
             TagKey<Block> tagKey = TagKey.create(Registries.BLOCK, resourceLocation);
             Atmospherica.LOGGER.debug("Inserted BlockTag {}", tagKey);
-            blacklistedBlockTags.add(tagKey);
+            tempBlacklistedBlockTags.add(tagKey);
          }
 
-         validDimensions = new ArrayList();
+         blacklistedBlockTags = fastContainsList(tempBlacklistedBlockTags);
+
+         List<ResourceKey<Level>> tempValidDimensions = new ArrayList<>();
 
          for (Object obj : VALID_DIMENSIONS.get()) {
             String stringxx = (String)obj;
             ResourceLocation resourceLocation = new ResourceLocation(stringxx);
             ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, resourceLocation);
-            validDimensions.add(dimension);
+            tempValidDimensions.add(dimension);
          }
+
+         validDimensions = fastContainsList(tempValidDimensions);
 
          stormSize = (Double)STORM_SIZE.get();
          layer0Height = (Double)LAYER_0_HEIGHT.get();
@@ -270,5 +276,23 @@ public class ServerConfig {
          doCyclones = (Boolean)DOCYCLONES.get();
          doSqualls = (Boolean)DOSQUALLS.get();
       }
+   }
+
+   private static <E> List<E> fastContainsList(List<E> elements) {
+      java.util.Set<E> set = new java.util.HashSet<>(elements);
+      return new java.util.AbstractList<E>() {
+         @Override
+         public E get(int index) {
+            return elements.get(index);
+         }
+         @Override
+         public int size() {
+            return elements.size();
+         }
+         @Override
+         public boolean contains(Object o) {
+            return set.contains(o);
+         }
+      };
    }
 }
