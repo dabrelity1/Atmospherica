@@ -14,6 +14,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,6 +89,7 @@ public class ParticleManager implements PreparableReloadListener {
    // Reusable collections for render() to avoid allocations each frame
    private final Map<Integer, List<Particle>> sortedListCache = new HashMap();
    private final List<Particle> tempParticleList = new ArrayList(256);
+   private long[] sortArray = new long[32768];
 
    private static java.util.Comparator<ParticleRenderType> makeParticleRenderTypeComparator(List<ParticleRenderType> order) {
       return (a, b) -> {
@@ -352,14 +354,23 @@ public class ParticleManager implements PreparableReloadListener {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
                      // Sort by distance to camera (back to front)
-                     particlesSorted.sort((p1, p2) -> {
-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
-                        return Double.compare(d2, d1);
-                     });
+                     int currentParticleCount = particlesSorted.size();
+                     if (sortArray.length < currentParticleCount) {
+                        sortArray = new long[Math.max(sortArray.length * 2, currentParticleCount)];
+                     }
 
-                     for (Particle particle : particlesSorted) {
-                        double distSq = cameraPos.distanceToSqr(particle.getPos());
+                     for (int j = 0; j < currentParticleCount; j++) {
+                        Particle p = particlesSorted.get(j);
+                        double d1 = p.getPos().distanceToSqr(cameraPos);
+                        sortArray[j] = ((long) Float.floatToRawIntBits((float) d1) << 32) | (j & 0xFFFFFFFFL);
+                     }
+
+                     Arrays.sort(sortArray, 0, currentParticleCount);
+
+                     for (int j = currentParticleCount - 1; j >= 0; j--) {
+                        int index = (int) sortArray[j];
+                        float distSq = Float.intBitsToFloat((int) (sortArray[j] >> 32));
+                        Particle particle = particlesSorted.get(index);
                         
                         // Skip particles that are too far away
                         if (distSq > maxDistSq) continue;
