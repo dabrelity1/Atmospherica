@@ -114,8 +114,9 @@ public class ModShaders {
                 snow = Mth.lerp(0.05F, snow, 0.0F);
             } else {
                 float rain = weatherHandler.getPrecipitation(player.position());
+                // Optimize: Use lengthSqr() instead of length()^2 to avoid Math.sqrt and Math.pow overhead
                 float snowBlindness = (float) Mth.clamp(
-                    Math.pow(wind.length() / 60.0, 2.0) * rain,
+                    (wind.lengthSqr() / 3600.0) * rain,
                     0.0,
                     1.0
                 );
@@ -213,8 +214,10 @@ public class ModShaders {
                     0.0
                 );
                 setUniformFloat3(effect, "sunDir", (float) sunDir.x, (float) sunDir.y, (float) sunDir.z);
+                // Optimize: Unroll exponent 3.0 to bypass expensive Math.pow call
+                double lightBase = (Math.cos(sunAngle) + 1.0) / 2.0;
                 setUniformFloat(effect, "lightIntensity", 
-                    (float) Math.pow((Math.cos(sunAngle) + 1.0) / 2.0, 3.0));
+                    (float) (lightBase * lightBase * lightBase));
                 setUniformFloat(effect, "downsample", (float) ClientConfig.volumetricsDownsample);
                 
                 if (passes.size() > 1) {
@@ -384,9 +387,11 @@ public class ModShaders {
                     .multiply(1.0, 0.0, 1.0)
                     .add(0.0, ServerConfig.layer0Height, 0.0);
                 Vec3 lightingColor = new Vec3(1.0, 1.0, 1.0);
+                // Optimize: Unroll exponent 2.5 to direct multiplication and Math.sqrt instead of Math.pow
+                double sunDirRatio = 1.0 - sunDir.y;
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.741, 0.318, 0.227),
-                    Math.pow(1.0 - sunDir.y, 2.5)
+                    sunDirRatio * sunDirRatio * Math.sqrt(sunDirRatio)
                 );
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.314, 0.408, 0.525),
