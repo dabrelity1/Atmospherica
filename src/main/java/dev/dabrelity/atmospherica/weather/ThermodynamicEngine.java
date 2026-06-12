@@ -307,7 +307,10 @@ public class ThermodynamicEngine {
 
          for (Storm storm : weatherHandler.getStorms()) {
             if (storm.stormType == 1) {
-               double distance = Math.sqrt(Math.pow(posX - storm.position.x, 2) + Math.pow(posZ - storm.position.z, 2));
+               double dxSq = posX - storm.position.x;
+               double dzSq = posZ - storm.position.z;
+               // ⚡ Bolt: Replace Math.pow(x, 2) with x * x for performance in hot loop
+               double distance = Math.sqrt(dxSq * dxSq + dzSq * dzSq);
                Vec2 v2fWorldPos = new Vec2((float)posX, (float)posZ);
                Vec2 stormVel = new Vec2((float)storm.velocity.x, (float)storm.velocity.z);
                Vec2 v2fStormPos = new Vec2((float)storm.position.x, (float)storm.position.z);
@@ -315,8 +318,10 @@ public class ThermodynamicEngine {
                Vec2 fwd = stormVel.normalized();
                Vec2 le = Util.mulVec2(right, -((float)ServerConfig.stormSize) * 5.0F);
                Vec2 ri = Util.mulVec2(right, (float)ServerConfig.stormSize * 5.0F);
+               // ⚡ Bolt: Extract clamp and replace Math.pow(x, 2) with x * x
+               float distClamp = Mth.clamp((float)(distance / (ServerConfig.stormSize * 5.0)), 0.0F, 1.0F);
                Vec2 off = Util.mulVec2(
-                  fwd, -((float)Math.pow(Mth.clamp(distance / ((float)ServerConfig.stormSize * 5.0F), 0.0, 1.0), 2.0)) * ((float)ServerConfig.stormSize * 1.5F)
+                  fwd, -(distClamp * distClamp) * ((float)ServerConfig.stormSize * 1.5F)
                );
                le = le.add(off);
                ri = ri.add(off);

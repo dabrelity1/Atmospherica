@@ -200,10 +200,11 @@ public class WindEngine {
                         Vec2 fwd = stormVel.normalized();
                         Vec2 le = Util.mulVec2(right, -((float)ServerConfig.stormSize) * 5.0F);
                         Vec2 ri = Util.mulVec2(right, (float)ServerConfig.stormSize * 5.0F);
+                        // ⚡ Bolt: Extract clamp and replace Math.pow(x, 2) with x * x
+                        float distClamp = Mth.clamp((float)(distance / (ServerConfig.stormSize * 5.0)), 0.0F, 1.0F);
                         Vec2 off = Util.mulVec2(
                            fwd,
-                           -((float)Math.pow(Mth.clamp(distance / ((float)ServerConfig.stormSize * 5.0F), 0.0, 1.0), 2.0))
-                              * ((float)ServerConfig.stormSize * 1.5F)
+                           -(distClamp * distClamp) * ((float)ServerConfig.stormSize * 1.5F)
                         );
                         le = le.add(off);
                         ri = ri.add(off);
