@@ -114,8 +114,9 @@ public class ModShaders {
                 snow = Mth.lerp(0.05F, snow, 0.0F);
             } else {
                 float rain = weatherHandler.getPrecipitation(player.position());
+                // Optimized: lengthSqr() / 3600.0 avoids Math.pow and the Math.sqrt hidden in length()
                 float snowBlindness = (float) Mth.clamp(
-                    Math.pow(wind.length() / 60.0, 2.0) * rain,
+                    (wind.lengthSqr() / 3600.0) * rain,
                     0.0,
                     1.0
                 );
