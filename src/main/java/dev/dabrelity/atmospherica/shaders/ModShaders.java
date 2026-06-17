@@ -115,7 +115,7 @@ public class ModShaders {
             } else {
                 float rain = weatherHandler.getPrecipitation(player.position());
                 float snowBlindness = (float) Mth.clamp(
-                    Math.pow(wind.length() / 60.0, 2.0) * rain,
+                    (wind.lengthSqr() / (60.0 * 60.0)) * rain,
                     0.0,
                     1.0
                 );
@@ -324,16 +324,15 @@ public class ModShaders {
                     Storm storm = storms.get(i);
                     if (
                         storm.lastPosition == null ||
-                        storm.position
-                            .multiply(1.0, 0.0, 1.0)
-                            .distanceTo(
-                                camera.getPosition().multiply(1.0, 0.0, 1.0)
-                            ) >
-                        32000.0 ||
                         (storm.stage <= 0 &&
                             storm.energy <= 0 &&
                             storm.stormType != 2)
                     ) {
+                        continue;
+                    }
+                    double dx = storm.position.x - camPos.x;
+                    double dz = storm.position.z - camPos.z;
+                    if (dx * dx + dz * dz > 32000.0 * 32000.0) {
                         continue;
                     }
 
@@ -379,10 +378,7 @@ public class ModShaders {
                 setUniformFloat(effect, "overcastPerc", (float) ServerConfig.overcastPercent);
                 setUniformFloat(effect, "rainStrength", (float) ServerConfig.rainStrength);
                 
-                Vec3 samplePos = camera
-                    .getPosition()
-                    .multiply(1.0, 0.0, 1.0)
-                    .add(0.0, ServerConfig.layer0Height, 0.0);
+                Vec3 samplePos = new Vec3(camPos.x, ServerConfig.layer0Height, camPos.z);
                 Vec3 lightingColor = new Vec3(1.0, 1.0, 1.0);
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.741, 0.318, 0.227),

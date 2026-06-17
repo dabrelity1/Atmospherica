@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-10-24 - Undeclared hoisted variables in vector unpacking
+**Learning:** When unpacking object vectors into primitive math (e.g. `camPos.x`) via a `sed`/`grep` derived plan, it is extremely easy to reference a variable (`camPos`) that is not accessible in the block of code you are modifying. In `ModShaders.java`, replacing `camera.getPosition()` with `camPos` caused a compilation failure because `camPos` was not in scope for that block.
+**Action:** Always verify variable scope via `cat -n` or `sed -n` with sufficient context before hoisting. If the variable is out of scope, either redefine it locally or inline the access (e.g., `camera.getPosition().x`). Always run `gradle compileJava` to catch these scoping issues before PR submission.
