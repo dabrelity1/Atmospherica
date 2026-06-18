@@ -115,7 +115,7 @@ public class ModShaders {
             } else {
                 float rain = weatherHandler.getPrecipitation(player.position());
                 float snowBlindness = (float) Mth.clamp(
-                    Math.pow(wind.length() / 60.0, 2.0) * rain,
+                    (wind.lengthSqr() / 3600.0) * rain,
                     0.0,
                     1.0
                 );
@@ -207,14 +207,16 @@ public class ModShaders {
                 setUniformFloat(effect, "stormSize", (float) ServerConfig.stormSize * 2.0F);
                 
                 float sunAngle = minecraft.level.getSunAngle(partialTicks);
+                double cosSunAngle = Math.cos(sunAngle);
                 Vec3 sunDir = new Vec3(
                     -Math.sin(sunAngle),
-                    Math.cos(sunAngle),
+                    cosSunAngle,
                     0.0
                 );
                 setUniformFloat3(effect, "sunDir", (float) sunDir.x, (float) sunDir.y, (float) sunDir.z);
+                double lightBase = (cosSunAngle + 1.0) / 2.0;
                 setUniformFloat(effect, "lightIntensity", 
-                    (float) Math.pow((Math.cos(sunAngle) + 1.0) / 2.0, 3.0));
+                    (float) (lightBase * lightBase * lightBase));
                 setUniformFloat(effect, "downsample", (float) ClientConfig.volumetricsDownsample);
                 
                 if (passes.size() > 1) {
