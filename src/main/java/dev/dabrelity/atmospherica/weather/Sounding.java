@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
@@ -17,7 +18,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class Sounding {
-   public Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> data = new HashMap();
+   public Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> data = new TreeMap<>();
    Vec3 position;
    public WeatherHandler weatherHandler;
 
@@ -101,7 +102,7 @@ public class Sounding {
       float CAPE = 0.0F;
       float CINH = 0.0F;
       float CAPE3 = 0.0F;
-      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> set = this.data.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList();
+      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> set = new java.util.ArrayList<>(this.data.entrySet());
       float delta = 0.0F;
       if (set.size() > 1) {
          delta = (Integer)((Map.Entry)set.get(1)).getKey() - (Integer)((Map.Entry)set.get(0)).getKey();
@@ -144,7 +145,7 @@ public class Sounding {
 
    @Nullable
    public ThermodynamicEngine.AtmosphericDataPoint getFromPressure(float p) {
-      for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : this.data.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList()) {
+      for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : this.data.entrySet()) {
          if (entry.getValue().pressure() < p) {
             return entry.getValue();
          }
@@ -205,7 +206,7 @@ public class Sounding {
       if (dataPoint != null) {
          return dataPoint;
       } else {
-         for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : this.data.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList()) {
+         for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : this.data.entrySet()) {
             if (entry.getKey() >= h) {
                return entry.getValue();
             }
@@ -217,7 +218,7 @@ public class Sounding {
 
    @Nullable
    public Sounding.Parcel getSBParcel() {
-      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> set = this.data.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList();
+      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> set = new java.util.ArrayList<>(this.data.entrySet());
       Iterator var2 = set.iterator();
       if (var2.hasNext()) {
          Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry = (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>)var2.next();
@@ -229,8 +230,7 @@ public class Sounding {
 
    public CompoundTag serializeNBT() {
       CompoundTag compoundTag = new CompoundTag();
-      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> entries = new java.util.ArrayList<>(
-         this.data.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList());
+      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> entries = new java.util.ArrayList<>(this.data.entrySet());
       java.util.Collections.reverse(entries);
 
       for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : entries) {
@@ -242,8 +242,7 @@ public class Sounding {
 
    public String toString() {
       StringBuilder str = new StringBuilder();
-      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> entries = new java.util.ArrayList<>(
-         this.data.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList());
+      List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> entries = new java.util.ArrayList<>(this.data.entrySet());
       java.util.Collections.reverse(entries);
 
       for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : entries) {
@@ -268,7 +267,7 @@ public class Sounding {
    public static class Parcel {
       public Sounding sounding;
       public ThermodynamicEngine.AtmosphericDataPoint parcel;
-      public Map<Float, Float> profile = new HashMap();
+      public Map<Float, Float> profile = new TreeMap<>();
       public float lclP;
       public float lfcP = -1.0F;
       public float elP = -1.0F;
@@ -279,8 +278,8 @@ public class Sounding {
          Sounding.Parcel.LCL lcl = DryLift(parcel.pressure(), parcel.temperature(), parcel.dewpoint());
          this.lclP = lcl.pressure();
          // Direct iteration instead of stream().toList() for better performance
-         Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> lower = new HashMap();
-         Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> upper = new HashMap();
+         Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> lower = new TreeMap<>();
+         Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> upper = new TreeMap<>();
          float lowMinP = 10000.0F;
 
          for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : sounding.data.entrySet()) {
@@ -300,14 +299,10 @@ public class Sounding {
          Map<Float, Float> tUpper = this.GetMoistLapse(upper, (Float)tLower.getOrDefault(lowMinP, lcl.temp()), lowMinP);
          this.profile.putAll(tLower);
          this.profile.putAll(tUpper);
-         List<Map.Entry<Float, Float>> profileSetAsc = this.profile.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList();
+         List<Map.Entry<Float, Float>> profileSetAsc = new java.util.ArrayList<>(this.profile.entrySet());
          List<Map.Entry<Float, Float>> profileSetDesc = new java.util.ArrayList<>(profileSetAsc);
          java.util.Collections.reverse(profileSetDesc);
-         List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> soundingSetAsc = sounding.data
-            .entrySet()
-            .stream()
-            .sorted(Map.Entry.comparingByKey())
-            .toList();
+         List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> soundingSetAsc = new java.util.ArrayList<>(sounding.data.entrySet());
          List<Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint>> soundingSetDesc = new java.util.ArrayList<>(soundingSetAsc);
          java.util.Collections.reverse(soundingSetDesc);
 
@@ -338,7 +333,7 @@ public class Sounding {
 
       public Map<Float, Float> GetDryLapse(Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> l, float t, float dp, float p) {
          Sounding.Parcel.LCL lcl = DryLift(p, t, dp);
-         Map<Float, Float> r = new HashMap();
+         Map<Float, Float> r = new TreeMap<>();
 
          // Direct iteration instead of stream().toList()
          for (Map.Entry<Integer, ThermodynamicEngine.AtmosphericDataPoint> entry : l.entrySet()) {
@@ -350,7 +345,7 @@ public class Sounding {
       }
 
       public Map<Float, Float> GetMoistLapse(Map<Integer, ThermodynamicEngine.AtmosphericDataPoint> l, float t, float p) {
-         Map<Float, Float> r = new HashMap();
+         Map<Float, Float> r = new TreeMap<>();
 
          // Use TreeMap for sorted iteration if needed, or just iterate directly
          // The order doesn't affect the result since we're just computing values per pressure
