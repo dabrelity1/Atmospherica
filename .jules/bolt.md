@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-10-24 - Shader Optimization with Pre-computed Values
+**Learning:** In the rendering pipeline (`ModShaders.renderShaders`), vector operations like `.multiply()` and `.distanceTo()` can silently allocate numerous objects per frame. Additionally, mathematical expressions passed to uniform setters (like `Math.pow(..., 3.0)`) can be unrolled to avoid allocation and overhead.
+**Action:** Extract camera position to local variables (like `camPos`) early and reuse it. Unroll integer exponents into direct multiplications. Replace 2D vector distance checks with direct coordinate squaring (`dx*dx + dz*dz`). Simplify vector manipulation logic to construct target vectors directly instead of chaining operations.
