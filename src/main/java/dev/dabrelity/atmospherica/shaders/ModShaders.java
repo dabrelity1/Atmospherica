@@ -213,8 +213,12 @@ public class ModShaders {
                     0.0
                 );
                 setUniformFloat3(effect, "sunDir", (float) sunDir.x, (float) sunDir.y, (float) sunDir.z);
+
+                // Bolt Optimization: Unroll Math.pow(x, 3.0) and reuse precomputed sunDir.y
+                // instead of re-evaluating Math.cos(sunAngle) to save CPU cycles per frame.
+                double baseIntensity = (sunDir.y + 1.0) / 2.0;
                 setUniformFloat(effect, "lightIntensity", 
-                    (float) Math.pow((Math.cos(sunAngle) + 1.0) / 2.0, 3.0));
+                    (float) (baseIntensity * baseIntensity * baseIntensity));
                 setUniformFloat(effect, "downsample", (float) ClientConfig.volumetricsDownsample);
                 
                 if (passes.size() > 1) {
@@ -384,9 +388,13 @@ public class ModShaders {
                     .multiply(1.0, 0.0, 1.0)
                     .add(0.0, ServerConfig.layer0Height, 0.0);
                 Vec3 lightingColor = new Vec3(1.0, 1.0, 1.0);
+
+                // Bolt Optimization: Unroll Math.pow(invSun, 2.5) to invSun^2 * sqrt(invSun)
+                // to eliminate Math.pow allocation overhead in the render pipeline.
+                double invSun = 1.0 - sunDir.y;
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.741, 0.318, 0.227),
-                    Math.pow(1.0 - sunDir.y, 2.5)
+                    invSun * invSun * Math.sqrt(invSun)
                 );
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.314, 0.408, 0.525),
