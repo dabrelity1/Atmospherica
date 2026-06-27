@@ -88,6 +88,7 @@ public class ParticleManager implements PreparableReloadListener {
    // Reusable collections for render() to avoid allocations each frame
    private final Map<Integer, List<Particle>> sortedListCache = new HashMap();
    private final List<Particle> tempParticleList = new ArrayList(256);
+   private long[] sortArray = new long[32768];
 
    private static java.util.Comparator<ParticleRenderType> makeParticleRenderTypeComparator(List<ParticleRenderType> order) {
       return (a, b) -> {
@@ -351,22 +352,40 @@ public class ParticleManager implements PreparableReloadListener {
                for (int i = 0; i <= maxRenderOrder; i++) {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
-                     // Sort by distance to camera (back to front)
-                     particlesSorted.sort((p1, p2) -> {
-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
-                        return Double.compare(d2, d1);
-                     });
+                     int size = particlesSorted.size();
+                     if (this.sortArray.length < size) {
+                        this.sortArray = new long[size];
+                     }
 
-                     for (Particle particle : particlesSorted) {
-                        double distSq = cameraPos.distanceToSqr(particle.getPos());
+                     for (int j = 0; j < size; ++j) {
+                        Particle p = particlesSorted.get(j);
+                        double dx = cameraPos.x - ((dev.dabrelity.atmospherica.interfaces.ParticleData) p).getPosX();
+                        double dy = cameraPos.y - ((dev.dabrelity.atmospherica.interfaces.ParticleData) p).getPosY();
+                        double dz = cameraPos.z - ((dev.dabrelity.atmospherica.interfaces.ParticleData) p).getPosZ();
+                        float distSq = (float) (dx * dx + dy * dy + dz * dz);
+                        this.sortArray[j] = ((long) Float.floatToRawIntBits(distSq) << 32) | (j & 0xFFFFFFFFL);
+                     }
+
+                     java.util.Arrays.sort(this.sortArray, 0, size);
+
+                     // Iterate backwards (from high distance to low distance)
+                     for (int j = size - 1; j >= 0; --j) {
+                        long packed = this.sortArray[j];
+                        int idx = (int) packed;
+                        Particle particle = particlesSorted.get(idx);
                         
+                        double dx = cameraPos.x - ((dev.dabrelity.atmospherica.interfaces.ParticleData) particle).getPosX();
+                        double dy = cameraPos.y - ((dev.dabrelity.atmospherica.interfaces.ParticleData) particle).getPosY();
+                        double dz = cameraPos.z - ((dev.dabrelity.atmospherica.interfaces.ParticleData) particle).getPosZ();
+                        double distSq = dx * dx + dy * dy + dz * dz;
+
                         // Skip particles that are too far away
                         if (distSq > maxDistSq) continue;
                         
                         boolean shouldSkip;
                         if (particle instanceof EntityRotFX entityRotFX) {
-                           shouldSkip = distSq > entityRotFX.renderRange * entityRotFX.renderRange
+                           double rr = entityRotFX.renderRange;
+                           shouldSkip = distSq > rr * rr
                               || (frustum != null && !frustum.isVisible(entityRotFX.getBoundingBoxForRender()));
                         } else {
                            shouldSkip = distSq > 65536.0
