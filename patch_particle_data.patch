@@ -1,0 +1,13 @@
+--- /app/src/main/java/dev/dabrelity/atmospherica/interfaces/ParticleData.java
++++ /app/src/main/java/dev/dabrelity/atmospherica/interfaces/ParticleData.java
+@@ -8,4 +8,10 @@
+    void setVelocity(Vec3 var1);
+
+    Vec3 getPosition();
++
++   double getPosX();
++
++   double getPosY();
++
++   double getPosZ();
+ }

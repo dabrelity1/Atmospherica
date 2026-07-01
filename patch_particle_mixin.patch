@@ -1,0 +1,22 @@
+--- /app/src/main/java/dev/dabrelity/atmospherica/mixin/ParticleMixin.java
++++ /app/src/main/java/dev/dabrelity/atmospherica/mixin/ParticleMixin.java
+@@ -34,4 +34,19 @@
+    public Vec3 getPosition() {
+       return new Vec3(this.x, this.y, this.z);
+    }
++
++   @Override
++   public double getPosX() {
++      return this.x;
++   }
++
++   @Override
++   public double getPosY() {
++      return this.y;
++   }
++
++   @Override
++   public double getPosZ() {
++      return this.z;
++   }
+ }
