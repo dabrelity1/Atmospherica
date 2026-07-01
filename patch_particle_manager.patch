@@ -1,0 +1,55 @@
+--- /app/src/main/java/dev/dabrelity/atmospherica/particle/ParticleManager.java
++++ /app/src/main/java/dev/dabrelity/atmospherica/particle/ParticleManager.java
+@@ -87,6 +87,7 @@
+    // Reusable collections for render() to avoid allocations each frame
+    private final Map<Integer, List<Particle>> sortedListCache = new HashMap();
+    private final List<Particle> tempParticleList = new ArrayList(256);
++   private long[] sortArray = new long[32768];
+
+    private static java.util.Comparator<ParticleRenderType> makeParticleRenderTypeComparator(List<ParticleRenderType> order) {
+       return (a, b) -> {
+@@ -351,15 +352,35 @@
+                for (int i = 0; i <= maxRenderOrder; i++) {
+                   List<Particle> particlesSorted = sortedListCache.get(i);
+                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
+-                     // Sort by distance to camera (back to front)
+-                     particlesSorted.sort((p1, p2) -> {
+-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
+-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
+-                        return Double.compare(d2, d1);
+-                     });
+-
+-                     for (Particle particle : particlesSorted) {
+-                        double distSq = cameraPos.distanceToSqr(particle.getPos());
++                     int size = particlesSorted.size();
++                     if (sortArray.length < size) {
++                        sortArray = new long[size * 2];
++                     }
++
++                     // Pack distance into high 32 bits, index into low 32 bits
++                     for (int j = 0; j < size; j++) {
++                        Particle p = particlesSorted.get(j);
++                        dev.dabrelity.atmospherica.interfaces.ParticleData pd = (dev.dabrelity.atmospherica.interfaces.ParticleData) p;
++
++                        double dx = pd.getPosX() - cameraPos.x;
++                        double dy = pd.getPosY() - cameraPos.y;
++                        double dz = pd.getPosZ() - cameraPos.z;
++                        float distSq = (float) (dx * dx + dy * dy + dz * dz);
++
++                        long packed = ((long) Float.floatToRawIntBits(distSq)) << 32 | (j & 0xFFFFFFFFL);
++                        sortArray[j] = packed;
++                     }
++
++                     // Sort primitive array
++                     java.util.Arrays.sort(sortArray, 0, size);
++
++                     // Render from back to front (largest distance to smallest)
++                     for (int j = size - 1; j >= 0; j--) {
++                        long packed = sortArray[j];
++                        int idx = (int) (packed & 0xFFFFFFFFL);
++                        Particle particle = particlesSorted.get(idx);
++
++                        float distSq = Float.intBitsToFloat((int) (packed >>> 32));
+
+                         // Skip particles that are too far away
+                         if (distSq > maxDistSq) continue;

@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-10-25 - Particle Distance Sorting via Bit-Packing
+**Learning:** The `ParticleManager` rendering pipeline sorts thousands of particles per frame. Creating new object instances or unpacking primitives repeatedly in the comparator function (`List.sort`) causes a significant memory allocation and CPU overhead bottleneck. Packing distance floats and array indices into a `long` array and performing primitive sorting eliminates O(N log N) object overhead per frame.
+**Action:** When sorting high-frequency elements in game loops based on float metrics (e.g. distance), bit-pack the sort key (top 32 bits) and original index (bottom 32 bits) into a `long[]`, sort it natively using `Arrays.sort`, and iterate over it to reconstruct order without objects.
