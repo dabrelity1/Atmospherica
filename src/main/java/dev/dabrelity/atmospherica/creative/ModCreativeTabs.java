@@ -15,7 +15,7 @@ import net.minecraftforge.registries.DeferredRegister;
 public class ModCreativeTabs {
    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Atmospherica.MOD_ID);
    public static final Supplier<CreativeModeTab> Atmospherica_TAB = CREATIVE_MODE_TABS.register(
-      "Atmospherica_tab",
+      "atmospherica_tab",
       () -> CreativeModeTab.builder()
          .icon(() -> new ItemStack((ItemLike)ModBlocks.RADAR.get()))
          .title(Component.translatable("creativetab.Atmospherica.main"))
