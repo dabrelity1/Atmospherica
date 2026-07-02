@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Arrays;
+import dev.dabrelity.atmospherica.interfaces.ParticleData;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -88,6 +90,7 @@ public class ParticleManager implements PreparableReloadListener {
    // Reusable collections for render() to avoid allocations each frame
    private final Map<Integer, List<Particle>> sortedListCache = new HashMap();
    private final List<Particle> tempParticleList = new ArrayList(256);
+   private long[] sortArray = new long[32768];
 
    private static java.util.Comparator<ParticleRenderType> makeParticleRenderTypeComparator(List<ParticleRenderType> order) {
       return (a, b) -> {
@@ -312,6 +315,9 @@ public class ParticleManager implements PreparableReloadListener {
       
       // Cache camera position to avoid repeated method calls
       final Vec3 cameraPos = camera.getPosition();
+      double camX = cameraPos.x;
+      double camY = cameraPos.y;
+      double camZ = cameraPos.z;
       final double maxDistSq = ClientConfig.maxParticleSpawnDistanceFromPlayer * ClientConfig.maxParticleSpawnDistanceFromPlayer;
 
       for (ParticleRenderType particleRenderType : this.particles.keySet()) {
@@ -352,14 +358,26 @@ public class ParticleManager implements PreparableReloadListener {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
                      // Sort by distance to camera (back to front)
-                     particlesSorted.sort((p1, p2) -> {
-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
-                        return Double.compare(d2, d1);
-                     });
 
-                     for (Particle particle : particlesSorted) {
-                        double distSq = cameraPos.distanceToSqr(particle.getPos());
+                     int size = particlesSorted.size();
+                     if (this.sortArray.length < size) {
+                        this.sortArray = new long[size];
+                     }
+                     for (int j = 0; j < size; j++) {
+                        Particle p = particlesSorted.get(j);
+                        ParticleData pd = (ParticleData) p;
+                        double dx = pd.getPosX() - camX;
+                        double dy = pd.getPosY() - camY;
+                        double dz = pd.getPosZ() - camZ;
+                        float fDistSq = (float) (dx * dx + dy * dy + dz * dz);
+                        this.sortArray[j] = ((long) Float.floatToRawIntBits(fDistSq) << 32) | (long) j;
+                     }
+                     Arrays.sort(this.sortArray, 0, size);
+
+                     for (int k = size - 1; k >= 0; k--) {
+                        int index = (int) this.sortArray[k];
+                        float distSq = Float.intBitsToFloat((int) (this.sortArray[k] >> 32));
+                        Particle particle = particlesSorted.get(index);
                         
                         // Skip particles that are too far away
                         if (distSq > maxDistSq) continue;
