@@ -114,7 +114,6 @@ public class ModShaders {
                 snow = Mth.lerp(0.05F, snow, 0.0F);
             } else {
                 float rain = weatherHandler.getPrecipitation(player.position());
-                // Opt: Math.pow(x, 2) is slow, multiplying x * x is faster
                 double windLenScaled = wind.length() / 60.0;
                 float snowBlindness = (float) Mth.clamp(
                     (windLenScaled * windLenScaled) * rain,
@@ -135,7 +134,7 @@ public class ModShaders {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
         WeatherHandler weatherHandler = GameBusClientEvents.weatherHandler;
-        
+
         // Check if we're in a valid dimension
         // If validDimensions isn't loaded yet, assume overworld is valid
         boolean isValidDimension = true;
@@ -147,7 +146,7 @@ public class ModShaders {
                 isValidDimension = minecraft.level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD);
             }
         }
-        
+
         if (
             clouds != null &&
             player != null &&
@@ -175,11 +174,11 @@ public class ModShaders {
 
                 EffectInstance effect = passes.get(0).getEffect();
                 Vec3 camPos = camera.getPosition();
-                
+
                 // Use optimized direct setters instead of lambda-based withUniform
                 setUniformFloat2(effect, "OutSize", (float) width, (float) height);
                 setUniformFloat3(effect, "pos", (float) camPos.x, (float) camPos.y, (float) camPos.z);
-                setUniformFloat2(effect, "scroll", 
+                setUniformFloat2(effect, "scroll",
                     Mth.lerp(partialTicks, lastScroll.x, scroll.x),
                     Mth.lerp(partialTicks, lastScroll.y, scroll.y)
                 );
@@ -190,7 +189,7 @@ public class ModShaders {
                 setUniformMat4(effect, "proj", projMat.invert());
                 setUniformMat4(effect, "viewmat", modelMat.invert());
                 setUniformFloat(effect, "time", player.tickCount + partialTicks);
-                
+
                 long seed = GameBusClientEvents.weatherHandler != null
                     ? GameBusClientEvents.weatherHandler.seed
                     : 0L;
@@ -207,7 +206,7 @@ public class ModShaders {
                 setUniformFloat(effect, "layer0height", (float) ServerConfig.layer0Height);
                 setUniformFloat(effect, "layerCheight", (float) ServerConfig.layerCHeight);
                 setUniformFloat(effect, "stormSize", (float) ServerConfig.stormSize * 2.0F);
-                
+
                 float sunAngle = minecraft.level.getSunAngle(partialTicks);
                 Vec3 sunDir = new Vec3(
                     -Math.sin(sunAngle),
@@ -215,12 +214,11 @@ public class ModShaders {
                     0.0
                 );
                 setUniformFloat3(effect, "sunDir", (float) sunDir.x, (float) sunDir.y, (float) sunDir.z);
-                // Opt: Unrolling Math.pow(x, 3.0) into x * x * x reduces JNI overhead
                 float lightVal = (float) ((Math.cos(sunAngle) + 1.0) / 2.0);
-                setUniformFloat(effect, "lightIntensity", 
+                setUniformFloat(effect, "lightIntensity",
                     lightVal * lightVal * lightVal);
                 setUniformFloat(effect, "downsample", (float) ClientConfig.volumetricsDownsample);
-                
+
                 if (passes.size() > 1) {
                     EffectInstance blur = passes.get(1).getEffect();
                     setUniformFloat(blur, "downsample", (float) ClientConfig.volumetricsDownsample);
@@ -382,13 +380,12 @@ public class ModShaders {
                 setUniformFloatArray(effect, "stormOcclusions", stormOcclusions);
                 setUniformFloat(effect, "overcastPerc", (float) ServerConfig.overcastPercent);
                 setUniformFloat(effect, "rainStrength", (float) ServerConfig.rainStrength);
-                
+
                 Vec3 samplePos = camera
                     .getPosition()
                     .multiply(1.0, 0.0, 1.0)
                     .add(0.0, ServerConfig.layer0Height, 0.0);
                 Vec3 lightingColor = new Vec3(1.0, 1.0, 1.0);
-                // Opt: Replace Math.pow(x, 2.5) with x * x * Math.sqrt(x) to prevent slow JNI call
                 double sunDirYInv = 1.0 - sunDir.y;
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.741, 0.318, 0.227),
@@ -402,11 +399,11 @@ public class ModShaders {
                     samplePos,
                     partialTicks
                 );
-                setUniformFloat3(effect, "lightingColor", 
+                setUniformFloat3(effect, "lightingColor",
                     (float) lightingColor.x, (float) lightingColor.y, (float) lightingColor.z);
-                setUniformFloat3(effect, "skyColor", 
+                setUniformFloat3(effect, "skyColor",
                     (float) skyColor.x, (float) skyColor.y, (float) skyColor.z);
-                
+
                 int quality = switch (ClientConfig.volumetricsQuality) {
                     case POTATO -> 0;
                     case LOW -> 1;
@@ -418,7 +415,7 @@ public class ModShaders {
                 setUniformFloat(effect, "nearPlane", 0.05F);
                 setUniformFloat(effect, "farPlane", minecraft.options.renderDistance().get() * 4.0F * 16.0F);
                 setUniformFloat(effect, "renderDistance", 6000.0F);
-                
+
                 clouds.process(partialTicks);
             }
 
@@ -485,37 +482,37 @@ public class ModShaders {
 
     // Optimized uniform setters that avoid lambda allocation overhead
     // Called every frame, so eliminating lambda allocation is important
-    
+
     private static void setUniformFloat(EffectInstance effect, String name, float value) {
         if (effect == null) return;
         Uniform uniform = effect.getUniform(name);
         if (uniform != null) uniform.set(value);
     }
-    
+
     private static void setUniformFloat2(EffectInstance effect, String name, float v1, float v2) {
         if (effect == null) return;
         Uniform uniform = effect.getUniform(name);
         if (uniform != null) uniform.set(v1, v2);
     }
-    
+
     private static void setUniformFloat3(EffectInstance effect, String name, float v1, float v2, float v3) {
         if (effect == null) return;
         Uniform uniform = effect.getUniform(name);
         if (uniform != null) uniform.set(v1, v2, v3);
     }
-    
+
     private static void setUniformInt(EffectInstance effect, String name, int value) {
         if (effect == null) return;
         Uniform uniform = effect.getUniform(name);
         if (uniform != null) uniform.set(value);
     }
-    
+
     private static void setUniformMat4(EffectInstance effect, String name, Matrix4f mat) {
         if (effect == null) return;
         Uniform uniform = effect.getUniform(name);
         if (uniform != null) uniform.set(mat);
     }
-    
+
     private static void setUniformFloatArray(EffectInstance effect, String name, float[] arr) {
         if (effect == null) return;
         Uniform uniform = effect.getUniform(name);
