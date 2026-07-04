@@ -114,8 +114,9 @@ public class ModShaders {
                 snow = Mth.lerp(0.05F, snow, 0.0F);
             } else {
                 float rain = weatherHandler.getPrecipitation(player.position());
+                // Bolt: Optimize Math.pow and wind.length() with wind.lengthSqr() and unrolled math
                 float snowBlindness = (float) Mth.clamp(
-                    Math.pow(wind.length() / 60.0, 2.0) * rain,
+                    (wind.lengthSqr() / 3600.0) * rain,
                     0.0,
                     1.0
                 );
@@ -213,8 +214,10 @@ public class ModShaders {
                     0.0
                 );
                 setUniformFloat3(effect, "sunDir", (float) sunDir.x, (float) sunDir.y, (float) sunDir.z);
+                // Bolt: Optimize lightIntensity using pre-calculated sunDir.y and unrolled multiplication
+                double lightBase = (sunDir.y + 1.0) / 2.0;
                 setUniformFloat(effect, "lightIntensity", 
-                    (float) Math.pow((Math.cos(sunAngle) + 1.0) / 2.0, 3.0));
+                    (float) (lightBase * lightBase * lightBase));
                 setUniformFloat(effect, "downsample", (float) ClientConfig.volumetricsDownsample);
                 
                 if (passes.size() > 1) {
@@ -379,14 +382,15 @@ public class ModShaders {
                 setUniformFloat(effect, "overcastPerc", (float) ServerConfig.overcastPercent);
                 setUniformFloat(effect, "rainStrength", (float) ServerConfig.rainStrength);
                 
-                Vec3 samplePos = camera
-                    .getPosition()
-                    .multiply(1.0, 0.0, 1.0)
-                    .add(0.0, ServerConfig.layer0Height, 0.0);
+                // Bolt: Optimize Vec3 allocation by building it directly
+                Vec3 camPosOriginal = camera.getPosition();
+                Vec3 samplePos = new Vec3(camPosOriginal.x, ServerConfig.layer0Height, camPosOriginal.z);
                 Vec3 lightingColor = new Vec3(1.0, 1.0, 1.0);
+                // Bolt: Optimize Math.pow(..., 2.5) with unrolled multiplication and Math.sqrt
+                double sunFactor = 1.0 - sunDir.y;
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.741, 0.318, 0.227),
-                    Math.pow(1.0 - sunDir.y, 2.5)
+                    sunFactor * sunFactor * Math.sqrt(sunFactor)
                 );
                 lightingColor = lightingColor.lerp(
                     new Vec3(0.314, 0.408, 0.525),
