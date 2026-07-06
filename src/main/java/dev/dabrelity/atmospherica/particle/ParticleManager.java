@@ -34,6 +34,8 @@ import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.phys.Vec3;
+import dev.dabrelity.atmospherica.interfaces.ParticleData;
+import java.util.Arrays;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleDescription;
 import net.minecraft.client.particle.ParticleProvider;
@@ -312,6 +314,9 @@ public class ParticleManager implements PreparableReloadListener {
       
       // Cache camera position to avoid repeated method calls
       final Vec3 cameraPos = camera.getPosition();
+      final double cx = cameraPos.x;
+      final double cy = cameraPos.y;
+      final double cz = cameraPos.z;
       final double maxDistSq = ClientConfig.maxParticleSpawnDistanceFromPlayer * ClientConfig.maxParticleSpawnDistanceFromPlayer;
 
       for (ParticleRenderType particleRenderType : this.particles.keySet()) {
@@ -351,15 +356,25 @@ public class ParticleManager implements PreparableReloadListener {
                for (int i = 0; i <= maxRenderOrder; i++) {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
-                     // Sort by distance to camera (back to front)
-                     particlesSorted.sort((p1, p2) -> {
-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
-                        return Double.compare(d2, d1);
-                     });
+                     // Sort by distance to camera (back to front) using bit-packing to avoid allocation overhead
+                     int numParticles = particlesSorted.size();
+                     long[] packedDistances = new long[numParticles];
+                     for (int j = 0; j < numParticles; j++) {
+                        Particle p = particlesSorted.get(j);
+                        ParticleData pd = (ParticleData) p;
+                        double dx = pd.getPosX() - cx;
+                        double dy = pd.getPosY() - cy;
+                        double dz = pd.getPosZ() - cz;
+                        double dSq = dx * dx + dy * dy + dz * dz;
+                        packedDistances[j] = ((long) Float.floatToRawIntBits((float) dSq) << 32) | (long) j;
+                     }
 
-                     for (Particle particle : particlesSorted) {
-                        double distSq = cameraPos.distanceToSqr(particle.getPos());
+                     Arrays.sort(packedDistances);
+
+                     for (int j = numParticles - 1; j >= 0; j--) {
+                        int idx = (int) packedDistances[j];
+                        float distSq = Float.intBitsToFloat((int) (packedDistances[j] >> 32));
+                        Particle particle = particlesSorted.get(idx);
                         
                         // Skip particles that are too far away
                         if (distSq > maxDistSq) continue;
