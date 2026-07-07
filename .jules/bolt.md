@@ -1,3 +1,6 @@
 ## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
 **Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
 **Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-05-24 - Optimize particle sorting distance calculation
+**Learning:** Bit-packing float distances and particle indices into primitive arrays for sorting eliminates O(N log N) object allocations per frame by avoiding the Java collections/Lambda sort wrappers entirely. Also, directly implementing position access methods (getPosX, getPosY, getPosZ) in ParticleMixin allows primitive coordinate access on the rendering hot path, avoiding object creation (e.g. `getPos()` creating a new `Vec3`).
+**Action:** Always consider bit-packing or primitive arrays when doing high-frequency sorting (e.g., in a render loop) on collections that generate temporary objects. Use mixins to expose primitive fields where feasible.

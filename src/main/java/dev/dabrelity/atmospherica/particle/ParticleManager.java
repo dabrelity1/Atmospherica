@@ -351,15 +351,24 @@ public class ParticleManager implements PreparableReloadListener {
                for (int i = 0; i <= maxRenderOrder; i++) {
                   List<Particle> particlesSorted = sortedListCache.get(i);
                   if (particlesSorted != null && !particlesSorted.isEmpty()) {
-                     // Sort by distance to camera (back to front)
-                     particlesSorted.sort((p1, p2) -> {
-                        double d1 = p1.getPos().distanceToSqr(cameraPos);
-                        double d2 = p2.getPos().distanceToSqr(cameraPos);
-                        return Double.compare(d2, d1);
-                     });
+                     int size = particlesSorted.size();
+                     long[] sortKeys = new long[size];
 
-                     for (Particle particle : particlesSorted) {
-                        double distSq = cameraPos.distanceToSqr(particle.getPos());
+                     for (int j = 0; j < size; j++) {
+                        Particle p = particlesSorted.get(j);
+                        double dx = cameraPos.x - ((dev.dabrelity.atmospherica.interfaces.ParticleData) p).getPosX();
+                        double dy = cameraPos.y - ((dev.dabrelity.atmospherica.interfaces.ParticleData) p).getPosY();
+                        double dz = cameraPos.z - ((dev.dabrelity.atmospherica.interfaces.ParticleData) p).getPosZ();
+                        float distSq = (float) (dx * dx + dy * dy + dz * dz);
+                        sortKeys[j] = ((long) Float.floatToRawIntBits(distSq) << 32) | (j & 0xFFFFFFFFL);
+                     }
+
+                     java.util.Arrays.sort(sortKeys);
+
+                     for (int j = size - 1; j >= 0; j--) {
+                        int index = (int) (sortKeys[j] & 0xFFFFFFFFL);
+                        Particle particle = particlesSorted.get(index);
+                        float distSq = Float.intBitsToFloat((int) (sortKeys[j] >>> 32));
                         
                         // Skip particles that are too far away
                         if (distSq > maxDistSq) continue;

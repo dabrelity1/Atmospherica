@@ -1,4 +1,3 @@
-
 package dev.dabrelity.atmospherica.mixin;
 
 import dev.dabrelity.atmospherica.interfaces.ParticleData;
@@ -44,5 +43,20 @@ public class ParticleMixin implements ParticleData {
    @Override
    public Vec3 getPosition() {
       return new Vec3(this.x, this.y, this.z);
+   }
+
+   @Override
+   public double getPosX() {
+      return this.x;
+   }
+
+   @Override
+   public double getPosY() {
+      return this.y;
+   }
+
+   @Override
+   public double getPosZ() {
+      return this.z;
    }
 }
