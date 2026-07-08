@@ -1,3 +1,3 @@
-## 2024-10-24 - Coordinate Mapping Traps in Vector Optimization
-**Learning:** The codebase constructs `Vec3(x, z, time)` in weather calculations, mapping the Z coordinate to the vector's Y component and Time to Z. When unpacking `Vec3` to primitives for optimization, `pos.y` does not always correspond to vertical position.
-**Action:** Always trace `Vec3` constructor arguments `(x, y, z)` to their semantic meaning before replacing with primitives, especially when `Vec3` is used as a generic data container.
+## 2024-07-08 - Fast math in uniform calculation
+**Learning:** Found multiple instances of `Math.pow()` with small integer/fractional constants combined with `Math.sqrt()` implicitly wrapped inside `Vec3.length()` in `ModShaders.renderShaders`. `Math.pow()` evaluation is heavily generalized and expensive. Furthermore, `Math.cos(sunAngle)` was redundantly computed when `sunDir.y` already perfectly captured this value.
+**Action:** Replace `Math.pow(vector.length() / constant, 2.0)` with `vector.lengthSqr() / (constant * constant)`. Reuse existing direction components (e.g., `sunDir.y`) to avoid re-evaluating trigonometrics. Unroll `Math.pow(x, 2.5)` to `x * x * Math.sqrt(x)`.
